@@ -5,6 +5,7 @@ import 'package:window_size/window_size.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'dart:math';
 import 'package:desktop_window/desktop_window.dart';
+import 'package:clipboard/clipboard.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +82,56 @@ class _TimerPageState extends State<TimerPage> {
         _nameController.clear();
         _showAddPerson = false;
       });
+    }
+  }
+
+  List<String> _parseParticipantList(String input) {
+    final RegExp emailPattern = RegExp(r'([^<,]+)\s*<[^>]+>');
+    final matches = emailPattern.allMatches(input);
+    return matches.map((match) => match.group(1)!.trim()).toList();
+  }
+
+  Future<void> _pasteParticipantList() async {
+    try {
+      final clipboardData = await FlutterClipboard.paste();
+      if (clipboardData.isNotEmpty) {
+        final participants = _parseParticipantList(clipboardData);
+        if (participants.isNotEmpty) {
+          setState(() {
+            _people.clear();
+            _people.addAll(participants);
+            final random = Random.secure();
+            _people.shuffle(random);
+            _currentPersonIndex = 0;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Added ${participants.length} participants'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No valid participants found in clipboard'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to paste from clipboard'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -596,21 +647,38 @@ class _TimerPageState extends State<TimerPage> {
                     ),
                   ],
                 ),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _showAddPerson = true;
-                    });
-                  },
-                  style: IconButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    padding: const EdgeInsets.all(6),
-                  ),
-                  icon: Icon(
-                    Icons.add,
-                    color: theme.colorScheme.onPrimary,
-                    size: 16,
-                  ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: _pasteParticipantList,
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.secondaryContainer,
+                        padding: const EdgeInsets.all(6),
+                      ),
+                      icon: Icon(
+                        Icons.content_paste,
+                        color: theme.colorScheme.onSecondaryContainer,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _showAddPerson = true;
+                        });
+                      },
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        padding: const EdgeInsets.all(6),
+                      ),
+                      icon: Icon(
+                        Icons.add,
+                        color: theme.colorScheme.onPrimary,
+                        size: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
