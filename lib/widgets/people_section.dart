@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'add_person_widget.dart';
 
-class PeopleSection extends StatelessWidget {
+class PeopleSection extends StatefulWidget {
   final List<String> people;
   final int currentPersonIndex;
   final bool showAddPerson;
@@ -12,6 +12,8 @@ class PeopleSection extends StatelessWidget {
   final VoidCallback onToggleAddPerson;
   final VoidCallback onCancelAddPerson;
   final VoidCallback onPasteParticipantList;
+  final VoidCallback onClearAllParticipants;
+  final VoidCallback onShuffleParticipants;
 
   const PeopleSection({
     super.key,
@@ -25,7 +27,15 @@ class PeopleSection extends StatelessWidget {
     required this.onToggleAddPerson,
     required this.onCancelAddPerson,
     required this.onPasteParticipantList,
+    required this.onClearAllParticipants,
+    required this.onShuffleParticipants,
   });
+
+  @override
+  State<PeopleSection> createState() => _PeopleSectionState();
+}
+
+class _PeopleSectionState extends State<PeopleSection> {
 
   @override
   Widget build(BuildContext context) {
@@ -50,14 +60,14 @@ class PeopleSection extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  if (showAddPerson)
+                  if (widget.showAddPerson)
                     AddPersonWidget(
-                      nameController: nameController,
-                      onAddPerson: onAddPerson,
-                      onCancel: onCancelAddPerson,
+                      nameController: widget.nameController,
+                      onAddPerson: widget.onAddPerson,
+                      onCancel: widget.onCancelAddPerson,
                     ),
                   Expanded(
-                    child: people.isEmpty
+                    child: widget.people.isEmpty
                         ? _buildEmptyState(context)
                         : _buildPeopleList(context, textPrimary, textSecondary),
                   ),
@@ -97,21 +107,90 @@ class PeopleSection extends StatelessWidget {
                   color: textPrimary,
                 ),
               ),
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'clear') {
+                    widget.onClearAllParticipants();
+                  } else if (value == 'shuffle') {
+                    widget.onShuffleParticipants();
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'clear',
+                    enabled: widget.people.isNotEmpty,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.clear_all,
+                          size: 16,
+                          color: widget.people.isNotEmpty 
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.outline,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Clear all',
+                          style: TextStyle(
+                            color: widget.people.isNotEmpty 
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.outline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'shuffle',
+                    enabled: widget.people.length > 1,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.shuffle,
+                          size: 16,
+                          color: widget.people.length > 1 
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.outline,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Shuffle order',
+                          style: TextStyle(
+                            color: widget.people.length > 1 
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.outline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                icon: Icon(
+                  Icons.more_vert,
+                  size: 16,
+                  color: textSecondary,
+                ),
+                style: IconButton.styleFrom(
+                  padding: const EdgeInsets.all(6),
+                ),
+                tooltip: 'Team options',
+              ),
             ],
           ),
           Row(
             children: [
               IconButton(
-                onPressed: hasValidClipboardContent ? onPasteParticipantList : null,
+                onPressed: widget.hasValidClipboardContent ? widget.onPasteParticipantList : null,
                 style: IconButton.styleFrom(
-                  backgroundColor: hasValidClipboardContent 
+                  backgroundColor: widget.hasValidClipboardContent 
                       ? theme.colorScheme.secondaryContainer
                       : theme.colorScheme.surfaceContainerHighest,
                   padding: const EdgeInsets.all(6),
                 ),
                 icon: Icon(
                   Icons.content_paste,
-                  color: hasValidClipboardContent 
+                  color: widget.hasValidClipboardContent 
                       ? theme.colorScheme.onSecondaryContainer
                       : theme.colorScheme.outline,
                   size: 16,
@@ -119,7 +198,7 @@ class PeopleSection extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: onToggleAddPerson,
+                onPressed: widget.onToggleAddPerson,
                 style: IconButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
                   padding: const EdgeInsets.all(6),
@@ -141,10 +220,10 @@ class PeopleSection extends StatelessWidget {
     final theme = Theme.of(context);
     
     return ListView.separated(
-      itemCount: people.length,
+      itemCount: widget.people.length,
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
-        final isActive = index == currentPersonIndex;
+        final isActive = index == widget.currentPersonIndex;
         final itemBg = isActive
             ? theme.colorScheme.primaryContainer
             : theme.colorScheme.surfaceContainerHighest;
@@ -178,7 +257,7 @@ class PeopleSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  people[index],
+                  widget.people[index],
                   style: TextStyle(
                     color: itemText,
                     fontWeight: FontWeight.w500,
@@ -186,7 +265,7 @@ class PeopleSection extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () => onRemovePerson(index),
+                onPressed: () => widget.onRemovePerson(index),
                 icon: Icon(
                   Icons.close,
                   color: theme.colorScheme.onSurfaceVariant,

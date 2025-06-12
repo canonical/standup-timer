@@ -17,13 +17,19 @@ class CurrentSpeaker extends StatelessWidget {
     final textSecondary = theme.colorScheme.onSurfaceVariant;
     final accentBg = theme.colorScheme.primaryContainer;
     final accentText = theme.colorScheme.onPrimaryContainer;
+    
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth < 800;
 
     return Padding(
-      padding: const EdgeInsets.all(32.0),
+      padding: EdgeInsets.all(isNarrow ? 16.0 : 32.0),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: EdgeInsets.symmetric(
+              horizontal: isNarrow ? 8 : 12, 
+              vertical: 4
+            ),
             decoration: BoxDecoration(
               color: accentBg,
               borderRadius: BorderRadius.circular(20),
@@ -36,43 +42,45 @@ class CurrentSpeaker extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 8,
-                  height: 8,
+                  width: isNarrow ? 6 : 8,
+                  height: isNarrow ? 6 : 8,
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: isNarrow ? 6 : 8),
                 Text(
-                  'Currently Speaking',
+                  people.isNotEmpty ? 'Currently Speaking' : '',
                   style: TextStyle(
                     color: accentText,
-                    fontSize: 14,
+                    fontSize: isNarrow ? 12 : 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isNarrow ? 12 : 16),
           Text(
             people.isNotEmpty
                 ? people[currentPersonIndex]
-                : 'No one selected',
+                : 'Please add participants',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: isNarrow ? 24 : 32,
               fontWeight: FontWeight.w500,
               color: textPrimary,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: isNarrow ? 6 : 8),
           Text(
-            'Person ${currentPersonIndex + 1} of ${people.length}',
+            people.isNotEmpty
+                ? 'Person ${currentPersonIndex + 1} of ${people.length}'
+                : '',
             style: TextStyle(
               color: textSecondary,
-              fontSize: 16,
+              fontSize: isNarrow ? 14 : 16,
             ),
           ),
         ],

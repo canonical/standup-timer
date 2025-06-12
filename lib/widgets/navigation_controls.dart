@@ -21,6 +21,9 @@ class NavigationControls extends StatelessWidget {
     final theme = Theme.of(context);
     final buttonGhostText = theme.colorScheme.onSurfaceVariant;
     final disabledColor = theme.colorScheme.outline;
+    
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth < 800;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -29,18 +32,21 @@ class NavigationControls extends StatelessWidget {
           onPressed: currentPersonIndex > 0 ? onPreviousPerson : null,
           icon: Icon(
             Icons.chevron_left,
-            size: 16,
+            size: isNarrow ? 14 : 16,
             color: currentPersonIndex > 0 ? buttonGhostText : disabledColor,
           ),
           label: Text(
             'Previous',
             style: TextStyle(
               color: currentPersonIndex > 0 ? buttonGhostText : disabledColor,
-              fontSize: 14,
+              fontSize: isNarrow ? 12 : 14,
             ),
           ),
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: isNarrow ? 8 : 16, 
+              vertical: isNarrow ? 6 : 8
+            ),
           ),
         ),
         _buildDotNavigation(context),
@@ -48,7 +54,10 @@ class NavigationControls extends StatelessWidget {
           onPressed:
               currentPersonIndex < peopleCount - 1 ? onNextPerson : null,
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: isNarrow ? 8 : 16, 
+              vertical: isNarrow ? 6 : 8
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -59,13 +68,13 @@ class NavigationControls extends StatelessWidget {
                   color: currentPersonIndex < peopleCount - 1
                       ? buttonGhostText
                       : disabledColor,
-                  fontSize: 14,
+                  fontSize: isNarrow ? 12 : 14,
                 ),
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: isNarrow ? 2 : 4),
               Icon(
                 Icons.chevron_right,
-                size: 16,
+                size: isNarrow ? 14 : 16,
                 color: currentPersonIndex < peopleCount - 1
                     ? buttonGhostText
                     : disabledColor,
@@ -78,6 +87,9 @@ class NavigationControls extends StatelessWidget {
   }
 
   Widget _buildDotNavigation(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth < 800;
+    
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(peopleCount, (index) {
@@ -89,9 +101,9 @@ class NavigationControls extends StatelessWidget {
         return GestureDetector(
           onTap: () => onPersonSelected(index),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-            width: 12,
-            height: 12,
+            margin: EdgeInsets.symmetric(horizontal: isNarrow ? 1 : 2),
+            width: isNarrow ? 10 : 12,
+            height: isNarrow ? 10 : 12,
             decoration: BoxDecoration(
               color: isActive ? activeDotColor : inactiveDotColor,
               shape: BoxShape.circle,

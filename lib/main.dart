@@ -115,12 +115,12 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     }
   }
 
-
   Future<void> _pasteParticipantList() async {
     try {
       final clipboardData = await ParticipantService.getClipboardContent();
       if (clipboardData.isNotEmpty) {
-        final participants = ParticipantService.parseParticipantList(clipboardData);
+        final participants =
+            ParticipantService.parseParticipantList(clipboardData);
         if (participants.isNotEmpty) {
           setState(() {
             _people.clear();
@@ -133,7 +133,8 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Added ${participants.length} participants'),
+                content: Text(
+                    'Added ${participants.length} ${participants.length == 1 ? 'participant' : 'participants'}'),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -159,7 +160,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
         );
       }
     }
-    
+
     _checkClipboardContent();
   }
 
@@ -170,9 +171,34 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
         _currentPersonIndex = _people.length - 1;
       } else if (_people.isEmpty) {
         _currentPersonIndex = 0;
+        _controller.restart(duration: _duration);
+        _controller.pause();
+        _isRunning = false;
       }
     });
     _saveParticipantList();
+  }
+
+  void _clearAllParticipants() {
+    setState(() {
+      _people.clear();
+      _currentPersonIndex = 0;
+      _controller.restart(duration: _duration);
+      _controller.pause();
+      _isRunning = false;
+    });
+    _saveParticipantList();
+  }
+
+  void _shuffleParticipants() {
+    if (_people.length > 1) {
+      setState(() {
+        final random = Random.secure();
+        _people.shuffle(random);
+        _currentPersonIndex = 0;
+      });
+      _saveParticipantList();
+    }
   }
 
   void _previousPerson() {
@@ -201,7 +227,7 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
         _controller.pause();
         _isRunning = false;
       } else {
-        _controller.resume();
+        _controller.start();
         _isRunning = true;
       }
     });
@@ -222,8 +248,16 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       autofocus: true,
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.space) {
+          if (event.logicalKey == LogicalKeyboardKey.space &&
+              (event.logicalKey == LogicalKeyboardKey.shiftLeft ||
+                  event.logicalKey == LogicalKeyboardKey.shiftRight ||
+                  HardwareKeyboard.instance.isShiftPressed)) {
             _toggleTimer();
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.keyV &&
+              (HardwareKeyboard.instance.isControlPressed ||
+                  HardwareKeyboard.instance.isMetaPressed)) {
+            _pasteParticipantList();
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
             if (_currentPersonIndex > 0) {
@@ -241,83 +275,162 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
       },
       child: Scaffold(
         appBar: const YaruWindowTitleBar(),
-        body: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 1,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: PeopleSection(
-                        people: _people,
-                        currentPersonIndex: _currentPersonIndex,
-                        showAddPerson: _showAddPerson,
-                        hasValidClipboardContent: _hasValidClipboardContent,
-                        nameController: _nameController,
-                        onAddPerson: _addPerson,
-                        onRemovePerson: _removePerson,
-                        onToggleAddPerson: () {
-                          setState(() {
-                            _showAddPerson = true;
-                          });
-                        },
-                        onCancelAddPerson: () {
-                          setState(() {
-                            _showAddPerson = false;
-                            _nameController.clear();
-                          });
-                        },
-                        onPasteParticipantList: _pasteParticipantList,
-                      ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 800;
+            
+            return Padding(
+              padding: EdgeInsets.all(isNarrow ? 12.0 : 24.0),
+              child: isNarrow
+                  ? Column(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: TimerSection(
+                            controller: _controller,
+                            duration: _duration,
+                            isRunning: _isRunning,
+                            currentPersonIndex: _currentPersonIndex,
+                            people: _people,
+                            onToggleTimer: _toggleTimer,
+                            onResetTimer: _resetTimer,
+                            onPreviousPerson: _previousPerson,
+                            onNextPerson: _nextPerson,
+                            onPersonSelected: (index) {
+                              setState(() {
+                                _currentPersonIndex = index;
+                                _controller.restart(duration: _duration);
+                                _isRunning = true;
+                              });
+                            },
+                            onTimerComplete: () {
+                              setState(() {
+                                if (_currentPersonIndex < _people.length - 1) {
+                                  _currentPersonIndex++;
+                                  _controller.restart(duration: _duration);
+                                  _isRunning = true;
+                                } else {
+                                  _isRunning = false;
+                                  _controller.pause();
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: PeopleSection(
+                                  people: _people,
+                                  currentPersonIndex: _currentPersonIndex,
+                                  showAddPerson: _showAddPerson,
+                                  hasValidClipboardContent: _hasValidClipboardContent,
+                                  nameController: _nameController,
+                                  onAddPerson: _addPerson,
+                                  onRemovePerson: _removePerson,
+                                  onToggleAddPerson: () {
+                                    setState(() {
+                                      _showAddPerson = true;
+                                    });
+                                  },
+                                  onCancelAddPerson: () {
+                                    setState(() {
+                                      _showAddPerson = false;
+                                      _nameController.clear();
+                                    });
+                                  },
+                                  onPasteParticipantList: _pasteParticipantList,
+                                  onClearAllParticipants: _clearAllParticipants,
+                                  onShuffleParticipants: _shuffleParticipants,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SessionInfo(people: _people),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: PeopleSection(
+                                  people: _people,
+                                  currentPersonIndex: _currentPersonIndex,
+                                  showAddPerson: _showAddPerson,
+                                  hasValidClipboardContent: _hasValidClipboardContent,
+                                  nameController: _nameController,
+                                  onAddPerson: _addPerson,
+                                  onRemovePerson: _removePerson,
+                                  onToggleAddPerson: () {
+                                    setState(() {
+                                      _showAddPerson = true;
+                                    });
+                                  },
+                                  onCancelAddPerson: () {
+                                    setState(() {
+                                      _showAddPerson = false;
+                                      _nameController.clear();
+                                    });
+                                  },
+                                  onPasteParticipantList: _pasteParticipantList,
+                                  onClearAllParticipants: _clearAllParticipants,
+                                  onShuffleParticipants: _shuffleParticipants,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              SessionInfo(people: _people),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        Expanded(
+                          flex: 2,
+                          child: TimerSection(
+                            controller: _controller,
+                            duration: _duration,
+                            isRunning: _isRunning,
+                            currentPersonIndex: _currentPersonIndex,
+                            people: _people,
+                            onToggleTimer: _toggleTimer,
+                            onResetTimer: _resetTimer,
+                            onPreviousPerson: _previousPerson,
+                            onNextPerson: _nextPerson,
+                            onPersonSelected: (index) {
+                              setState(() {
+                                _currentPersonIndex = index;
+                                _controller.restart(duration: _duration);
+                                _isRunning = true;
+                              });
+                            },
+                            onTimerComplete: () {
+                              setState(() {
+                                if (_currentPersonIndex < _people.length - 1) {
+                                  _currentPersonIndex++;
+                                  _controller.restart(duration: _duration);
+                                  _isRunning = true;
+                                } else {
+                                  _isRunning = false;
+                                  _controller.pause();
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    SessionInfo(people: _people),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                flex: 2,
-                child: TimerSection(
-                  controller: _controller,
-                  duration: _duration,
-                  isRunning: _isRunning,
-                  currentPersonIndex: _currentPersonIndex,
-                  people: _people,
-                  onToggleTimer: _toggleTimer,
-                  onResetTimer: _resetTimer,
-                  onPreviousPerson: _previousPerson,
-                  onNextPerson: _nextPerson,
-                  onPersonSelected: (index) {
-                    setState(() {
-                      _currentPersonIndex = index;
-                      _controller.restart(duration: _duration);
-                      _isRunning = true;
-                    });
-                  },
-                  onTimerComplete: () {
-                    setState(() {
-                      if (_currentPersonIndex < _people.length - 1) {
-                        _currentPersonIndex++;
-                        _controller.restart(duration: _duration);
-                        _isRunning = true;
-                      } else {
-                        _isRunning = false;
-                        _controller.pause();
-                      }
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
-
-
 }
