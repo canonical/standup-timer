@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yaru/yaru.dart';
 import 'package:window_size/window_size.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
@@ -99,7 +100,7 @@ class _TimerPageState extends State<TimerPage> {
       setState(() {
         _currentPersonIndex--;
         _controller.restart(duration: _duration);
-        if (!_isRunning) _controller.pause();
+        _isRunning = true;
       });
     }
   }
@@ -109,9 +110,21 @@ class _TimerPageState extends State<TimerPage> {
       setState(() {
         _currentPersonIndex++;
         _controller.restart(duration: _duration);
-        if (!_isRunning) _controller.pause();
+        _isRunning = true;
       });
     }
+  }
+
+  void _toggleTimer() {
+    setState(() {
+      if (_isRunning) {
+        _controller.pause();
+        _isRunning = false;
+      } else {
+        _controller.resume();
+        _isRunning = true;
+      }
+    });
   }
 
   void _resetTimer() {
@@ -125,29 +138,39 @@ class _TimerPageState extends State<TimerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const YaruWindowTitleBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 2,
-              child: _buildTimerSection(),
-            ),
-            const SizedBox(width: 24),
-            Expanded(
-              flex: 1,
-              child: Column(
-                children: [
-                  Expanded(child: _buildPeopleSection()),
-                  const SizedBox(height: 16),
-                  _buildSessionInfo(),
-                ],
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
+          _toggleTimer();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Scaffold(
+        appBar: const YaruWindowTitleBar(),
+        body: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    Expanded(child: _buildPeopleSection()),
+                    const SizedBox(height: 16),
+                    _buildSessionInfo(),
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 24),
+              Expanded(
+                flex: 2,
+                child: _buildTimerSection(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -287,11 +310,13 @@ class _TimerPageState extends State<TimerPage> {
         textFormat: CountdownTextFormat.MM_SS,
         isReverse: true,
         isReverseAnimation: true,
+        autoStart: false,
         onComplete: () {
           setState(() {
             if (_currentPersonIndex < _people.length - 1) {
               _currentPersonIndex++;
               _controller.restart(duration: _duration);
+              _isRunning = true;
             } else {
               _isRunning = false;
               _controller.pause();
@@ -396,17 +421,7 @@ class _TimerPageState extends State<TimerPage> {
         ),
         const SizedBox(width: 12),
         ElevatedButton(
-          onPressed: () {
-            setState(() {
-              if (_isRunning) {
-                _controller.pause();
-                _isRunning = false;
-              } else {
-                _controller.resume();
-                _isRunning = true;
-              }
-            });
-          },
+          onPressed: _toggleTimer,
           style: ElevatedButton.styleFrom(
             backgroundColor: theme.colorScheme.primary,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -511,7 +526,7 @@ class _TimerPageState extends State<TimerPage> {
           onTap: () => setState(() {
             _currentPersonIndex = index;
             _controller.restart(duration: _duration);
-            if (!_isRunning) _controller.pause();
+            _isRunning = true;
           }),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 2),
