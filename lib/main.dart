@@ -55,7 +55,8 @@ class _TimerPageState extends State<TimerPage> {
 
   final int _duration = 120; // Seconds
   bool _isRunning = false;
-  
+  bool _isDarkMode = false;
+
   int _currentPersonIndex = 0;
   List<String> _people = [];
   bool _showAddPerson = false;
@@ -132,198 +133,266 @@ class _TimerPageState extends State<TimerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor =
+        _isDarkMode ? const Color(0xFF111827) : const Color(0xFFF9FAFB);
+
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F172A), // slate-900
-              Color(0xFF581C87), // purple-900
-              Color(0xFF0F172A), // slate-900
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 32),
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: _buildTimerSection(),
-                      ),
-                      const SizedBox(width: 32),
-                      Expanded(
-                        flex: 1,
-                        child: _buildPeopleSection(),
-                      ),
-                    ],
+      backgroundColor: backgroundColor,
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _buildTimerSection(),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 24),
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      children: [
+                        Expanded(child: _buildPeopleSection()),
+                        const SizedBox(height: 16),
+                        _buildSessionInfo(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFF97316), Color(0xFFEC4899)],
-                ),
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-              ),
-              child: const Icon(
-                Icons.access_time,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Daily Standup',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(
-            Icons.settings,
-            color: Color(0xFF9CA3AF),
-            size: 24,
+    final headerBg = _isDarkMode ? const Color(0xFF1F2937) : Colors.white;
+    final borderColor =
+        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+    final textColor =
+        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+    final buttonColor =
+        _isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: headerBg,
+        border: Border(
+          bottom: BorderSide(
+            color: borderColor,
+            width: 1,
           ),
         ),
-      ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF97316),
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                child: const Icon(
+                  Icons.access_time,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Daily Standup Timer',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _isDarkMode = !_isDarkMode;
+                  });
+                },
+                icon: Icon(
+                  _isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                  color: buttonColor,
+                  size: 20,
+                ),
+                style: IconButton.styleFrom(
+                  padding: const EdgeInsets.all(8),
+                ),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.settings,
+                  color: buttonColor,
+                  size: 20,
+                ),
+                style: IconButton.styleFrom(
+                  padding: const EdgeInsets.all(8),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildTimerSection() {
+    final cardBg = _isDarkMode ? const Color(0xFF1F2937) : Colors.white;
+    final borderColor =
+        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        color: cardBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
       ),
-      child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            children: [
-              _buildCurrentSpeaker(),
-              const SizedBox(height: 32),
-              _buildCircularTimer(),
-              const SizedBox(height: 32),
-              _buildTimerControls(),
-              const SizedBox(height: 24),
-              _buildNavigationControls(),
-            ],
+      child: Column(
+        children: [
+          _buildCurrentSpeaker(),
+          Container(
+            width: double.infinity,
+            height: 1,
+            color: borderColor,
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              children: [
+                _buildCircularTimer(),
+                const SizedBox(height: 24),
+                _buildProgressBar(),
+                const SizedBox(height: 32),
+                _buildTimerControls(),
+                const SizedBox(height: 24),
+                _buildNavigationControls(),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildCurrentSpeaker() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFFF97316).withOpacity(0.2),
-                const Color(0xFFEC4899).withOpacity(0.2),
+    final textPrimary =
+        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+    final textSecondary =
+        _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280);
+    final accentBg =
+        _isDarkMode ? const Color(0xFF431407) : const Color(0xFFFEF3C7);
+    final accentText =
+        _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
+    final accentIcon =
+        _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFF59E0B);
+
+    return Padding(
+      padding: const EdgeInsets.all(32.0),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: accentBg,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _isDarkMode
+                    ? const Color(0xFF92400E)
+                    : const Color(0xFFFBBF24),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF97316),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Currently Speaking',
+                  style: TextStyle(
+                    color: accentText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
-            borderRadius: BorderRadius.circular(20),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.people,
-                color: Color(0xFFFB923C),
-                size: 16,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Now Speaking',
-                style: TextStyle(
-                  color: Color(0xFFFDBA74),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          const SizedBox(height: 16),
+          Text(
+            _people.isNotEmpty
+                ? _people[_currentPersonIndex]
+                : 'No one selected',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w500,
+              color: textPrimary,
+            ),
+            textAlign: TextAlign.center,
           ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          _people.isNotEmpty ? _people[_currentPersonIndex] : 'No one',
-          style: const TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+          const SizedBox(height: 8),
+          Text(
+            'Person ${_currentPersonIndex + 1} of ${_people.length}',
+            style: TextStyle(
+              color: textSecondary,
+              fontSize: 16,
+            ),
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Person ${_currentPersonIndex + 1} of ${_people.length}',
-          style: const TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontSize: 16,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildCircularTimer() {
+    final textColor =
+        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+    final ringColor =
+        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+
     return SizedBox(
-      width: 256,
-      height: 256,
+      width: 192,
+      height: 192,
       child: CircularCountDownTimer(
         duration: _duration,
         initialDuration: 0,
         controller: _controller,
-        width: 256,
-        height: 256,
-        ringColor: Colors.white.withOpacity(0.1),
+        width: 192,
+        height: 192,
+        ringColor: ringColor,
         fillColor: const Color(0xFFF97316),
-        fillGradient: const LinearGradient(
-          colors: [Color(0xFFF97316), Color(0xFFEC4899)],
-        ),
-        strokeWidth: 10.0,
+        strokeWidth: 8.0,
         strokeCap: StrokeCap.round,
-        textStyle: const TextStyle(
-          fontSize: 48,
+        textStyle: TextStyle(
+          fontSize: 40,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: textColor,
+          fontFamily: 'monospace',
         ),
         textFormat: CountdownTextFormat.MM_SS,
         isReverse: true,
@@ -343,7 +412,68 @@ class _TimerPageState extends State<TimerPage> {
     );
   }
 
+  Widget _buildProgressBar() {
+    final progressBg =
+        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+    final textMuted =
+        _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 384),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '0:00',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: textMuted,
+                ),
+              ),
+              Text(
+                '2:00',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: textMuted,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            height: 8,
+            decoration: BoxDecoration(
+              color: progressBg,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: 1 -
+                  (double.tryParse(_controller.getTime()?.toString() ?? '') ??
+                          _duration) /
+                      _duration,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF97316),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTimerControls() {
+    final buttonSecondaryBg =
+        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFF3F4F6);
+    final buttonSecondaryText =
+        _isDarkMode ? const Color(0xFFE5E7EB) : const Color(0xFF374151);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -360,14 +490,10 @@ class _TimerPageState extends State<TimerPage> {
             });
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            backgroundColor: const Color(0xFFF97316),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ).copyWith(
-            backgroundColor: WidgetStateProperty.all(
-              const Color(0xFFF97316),
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
           child: Row(
@@ -380,40 +506,40 @@ class _TimerPageState extends State<TimerPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                _isRunning ? 'Pause' : 'Start',
+                _isRunning ? 'Pause' : 'Start Timer',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         ElevatedButton(
           onPressed: _resetTimer,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white.withOpacity(0.1),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            backgroundColor: buttonSecondaryBg,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.refresh,
-                color: Colors.white,
+                color: buttonSecondaryText,
                 size: 20,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 'Reset',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                  color: buttonSecondaryText,
+                  fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),
               ),
@@ -425,70 +551,138 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildNavigationControls() {
+    final buttonGhostText =
+        _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+    final disabledColor =
+        _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        ElevatedButton(
+        TextButton.icon(
           onPressed: _currentPersonIndex > 0 ? _previousPerson : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white.withOpacity(0.05),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+          icon: Icon(
+            Icons.chevron_left,
+            size: 16,
+            color: _currentPersonIndex > 0 ? buttonGhostText : disabledColor,
+          ),
+          label: Text(
+            'Previous',
+            style: TextStyle(
+              color: _currentPersonIndex > 0 ? buttonGhostText : disabledColor,
+              fontSize: 14,
             ),
           ),
-          child: const Text(
-            '← Previous',
-            style: TextStyle(
-              color: Colors.white,
-            ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
         ),
-        ElevatedButton(
-          onPressed: _currentPersonIndex < _people.length - 1 ? _nextPerson : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white.withOpacity(0.05),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+        _buildDotNavigation(),
+        TextButton(
+          onPressed:
+              _currentPersonIndex < _people.length - 1 ? _nextPerson : null,
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
-          child: const Text(
-            'Next →',
-            style: TextStyle(
-              color: Colors.white,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Next',
+                style: TextStyle(
+                  color: _currentPersonIndex < _people.length - 1
+                      ? buttonGhostText
+                      : disabledColor,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.chevron_right,
+                size: 16,
+                color: _currentPersonIndex < _people.length - 1
+                    ? buttonGhostText
+                    : disabledColor,
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
+  Widget _buildDotNavigation() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(_people.length, (index) {
+        final isActive = index == _currentPersonIndex;
+        const activeDotColor = Color(0xFFF97316);
+        final inactiveDotColor =
+            _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB);
+
+        return GestureDetector(
+          onTap: () => setState(() {
+            _currentPersonIndex = index;
+            _controller.restart(duration: _duration);
+            if (!_isRunning) _controller.pause();
+          }),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: isActive ? activeDotColor : inactiveDotColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
   Widget _buildPeopleSection() {
+    final cardBg = _isDarkMode ? const Color(0xFF1F2937) : Colors.white;
+    final borderColor =
+        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+    final textPrimary =
+        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+    final textSecondary =
+        _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280);
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        color: cardBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: borderColor)),
+            ),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Team Members',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.people,
+                      size: 20,
+                      color: textSecondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Team Members',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
                 IconButton(
                   onPressed: () {
@@ -498,7 +692,7 @@ class _TimerPageState extends State<TimerPage> {
                   },
                   style: IconButton.styleFrom(
                     backgroundColor: const Color(0xFFF97316),
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                   ),
                   icon: const Icon(
                     Icons.add,
@@ -508,122 +702,148 @@ class _TimerPageState extends State<TimerPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            if (_showAddPerson) _buildAddPersonWidget(),
-            Expanded(
-              child: _people.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.separated(
-                      itemCount: _people.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final isActive = index == _currentPersonIndex;
-                        return Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            gradient: isActive
-                                ? LinearGradient(
-                                    colors: [
-                                      const Color(0xFFF97316).withOpacity(0.2),
-                                      const Color(0xFFEC4899).withOpacity(0.2),
-                                    ],
-                                  )
-                                : null,
-                            color: isActive ? null : Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(12),
-                            border: isActive
-                                ? Border.all(
-                                    color: const Color(0xFFF97316).withOpacity(0.3),
-                                  )
-                                : null,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 12,
-                                height: 12,
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  if (_showAddPerson) _buildAddPersonWidget(),
+                  Expanded(
+                    child: _people.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.separated(
+                            itemCount: _people.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final isActive = index == _currentPersonIndex;
+                              final itemBg = isActive
+                                  ? (_isDarkMode
+                                      ? const Color(0xFF431407)
+                                      : const Color(0xFFFEF3C7))
+                                  : (_isDarkMode
+                                      ? const Color(0xFF374151)
+                                      : const Color(0xFFF9FAFB));
+                              final itemBorder = isActive
+                                  ? (_isDarkMode
+                                      ? const Color(0xFF92400E)
+                                      : const Color(0xFFFBBF24))
+                                  : Colors.transparent;
+                              final itemText = isActive
+                                  ? (_isDarkMode
+                                      ? const Color(0xFFFBBF24)
+                                      : const Color(0xFFB45309))
+                                  : textPrimary;
+                              final dotColor = isActive
+                                  ? const Color(0xFFF97316)
+                                  : textSecondary;
+
+                              return Container(
+                                padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: isActive
-                                      ? const Color(0xFFFB923C)
-                                      : const Color(0xFF6B7280),
-                                  shape: BoxShape.circle,
+                                  color: itemBg,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: itemBorder),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  _people[index],
-                                  style: TextStyle(
-                                    color: isActive
-                                        ? const Color(0xFFFDBA74)
-                                        : const Color(0xFF9CA3AF),
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: dotColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        _people[index],
+                                        style: TextStyle(
+                                          color: itemText,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () => _removePerson(index),
+                                      icon: Icon(
+                                        Icons.close,
+                                        color: _isDarkMode
+                                            ? const Color(0xFF6B7280)
+                                            : const Color(0xFF9CA3AF),
+                                        size: 16,
+                                      ),
+                                      style: IconButton.styleFrom(
+                                        padding: const EdgeInsets.all(4),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              IconButton(
-                                onPressed: () => _removePerson(index),
-                                icon: const Icon(
-                                  Icons.close,
-                                  color: Color(0xFF6B7280),
-                                  size: 16,
-                                ),
-                                style: IconButton.styleFrom(
-                                  padding: const EdgeInsets.all(4),
-                                ),
-                              ),
-                            ],
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildAddPersonWidget() {
+    final inputBg = _isDarkMode ? const Color(0xFF374151) : Colors.white;
+    final inputBorder =
+        _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB);
+    final inputText =
+        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+    final placeholderText =
+        _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+    final addPersonBg =
+        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB);
+    final buttonSecondaryBg =
+        _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB);
+    final buttonSecondaryText =
+        _isDarkMode ? const Color(0xFFE5E7EB) : const Color(0xFF374151);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        color: addPersonBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: inputBorder),
       ),
       child: Column(
         children: [
           TextField(
             controller: _nameController,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: inputText),
             decoration: InputDecoration(
-              hintText: 'Enter name...',
-              hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+              hintText: 'Enter team member name',
+              hintStyle: TextStyle(color: placeholderText),
               filled: true,
-              fillColor: Colors.white.withOpacity(0.1),
+              fillColor: inputBg,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: Colors.white.withOpacity(0.2),
-                ),
+                borderSide: BorderSide(color: inputBorder),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: Colors.white.withOpacity(0.2),
-                ),
+                borderSide: BorderSide(color: inputBorder),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+                borderSide: BorderSide(
                   color: Color(0xFFF97316),
                   width: 2,
                 ),
               ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
             onSubmitted: (_) => _addPerson(),
           ),
@@ -634,16 +854,18 @@ class _TimerPageState extends State<TimerPage> {
                 onPressed: _addPerson,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF97316),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 child: const Text(
-                  'Add',
+                  'Add Member',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -656,17 +878,19 @@ class _TimerPageState extends State<TimerPage> {
                   });
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.1),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  backgroundColor: buttonSecondaryBg,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Cancel',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: buttonSecondaryText,
                     fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -678,24 +902,103 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    final iconColor =
+        _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB);
+    final textMuted =
+        _isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF);
+
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.people,
             size: 48,
-            color: Color(0xFF6B7280),
+            color: iconColor,
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
-            'No team members added yet',
+            'No team members added',
             style: TextStyle(
-              color: Color(0xFF9CA3AF),
+              color: textMuted,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Click + to add members',
+            style: TextStyle(
+              color: textMuted,
+              fontSize: 12,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSessionInfo() {
+    final cardBg = _isDarkMode ? const Color(0xFF1F2937) : Colors.white;
+    final borderColor =
+        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+    final textPrimary =
+        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+    final textSecondary =
+        _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Session Info',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildInfoRow('Total members:', '${_people.length}', textSecondary,
+              textPrimary),
+          const SizedBox(height: 8),
+          _buildInfoRow('Expected duration:', '${_people.length * 2} min',
+              textSecondary, textPrimary),
+          const SizedBox(height: 8),
+          _buildInfoRow(
+              'Time per person:', '2 min', textSecondary, textPrimary),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+      String label, String value, Color labelColor, Color valueColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: labelColor,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: valueColor,
+          ),
+        ),
+      ],
     );
   }
 }
