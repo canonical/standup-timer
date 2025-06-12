@@ -51,7 +51,7 @@ class TimerPage extends StatefulWidget {
   State<TimerPage> createState() => _TimerPageState();
 }
 
-class _TimerPageState extends State<TimerPage> {
+class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
   final CountDownController _controller = CountDownController();
   final TextEditingController _nameController = TextEditingController();
 
@@ -66,8 +66,17 @@ class _TimerPageState extends State<TimerPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSavedParticipants();
     _checkClipboardContent();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _checkClipboardContent();
+    }
   }
 
   Future<void> _loadSavedParticipants() async {
@@ -79,6 +88,7 @@ class _TimerPageState extends State<TimerPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _nameController.dispose();
     super.dispose();
   }

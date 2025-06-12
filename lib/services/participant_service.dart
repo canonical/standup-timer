@@ -23,9 +23,9 @@ class ParticipantService {
   }
 
   static List<String> parseParticipantList(String input) {
-    final RegExp emailPattern = RegExp(r'([^<,]+)\s*<[^>]+>');
+    final RegExp emailPattern = RegExp(r'([^<,]+?)\s*<[^>]+>', multiLine: true, dotAll: true);
     final matches = emailPattern.allMatches(input);
-    return matches.map((match) => match.group(1)!.trim()).toList();
+    return matches.map((match) => match.group(1)!.replaceAll(RegExp(r'\s+'), ' ').trim()).toList();
   }
 
   static Future<bool> hasValidClipboardContent() async {
