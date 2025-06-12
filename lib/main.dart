@@ -71,13 +71,7 @@ class _TimerPageState extends State<TimerPage> {
     super.dispose();
   }
 
-  bool get _isDarkMode => Theme.of(context).brightness == Brightness.dark;
 
-  String _formatTime(int seconds) {
-    final mins = seconds ~/ 60;
-    final secs = seconds % 60;
-    return '$mins:${secs.toString().padLeft(2, '0')}';
-  }
 
   void _addPerson() {
     if (_nameController.text.trim().isNotEmpty) {
@@ -160,9 +154,9 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildTimerSection() {
-    final cardBg = _isDarkMode ? const Color(0xFF1F2937) : Colors.white;
-    final borderColor =
-        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+    final theme = Theme.of(context);
+    final cardBg = theme.colorScheme.surface;
+    final borderColor = theme.colorScheme.outline;
 
     return Container(
       decoration: BoxDecoration(
@@ -176,7 +170,7 @@ class _TimerPageState extends State<TimerPage> {
           Container(
             width: double.infinity,
             height: 1,
-            color: borderColor,
+            color: theme.colorScheme.outline,
           ),
           Padding(
             padding: const EdgeInsets.all(32.0),
@@ -198,16 +192,11 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildCurrentSpeaker() {
-    final textPrimary =
-        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-    final textSecondary =
-        _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280);
-    final accentBg =
-        _isDarkMode ? const Color(0xFF431407) : const Color(0xFFFEF3C7);
-    final accentText =
-        _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
-    final accentIcon =
-        _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFF59E0B);
+    final theme = Theme.of(context);
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = theme.colorScheme.onSurfaceVariant;
+    final accentBg = theme.colorScheme.primaryContainer;
+    final accentText = theme.colorScheme.onPrimaryContainer;
 
     return Padding(
       padding: const EdgeInsets.all(32.0),
@@ -219,9 +208,7 @@ class _TimerPageState extends State<TimerPage> {
               color: accentBg,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _isDarkMode
-                    ? const Color(0xFF92400E)
-                    : const Color(0xFFFBBF24),
+                color: theme.colorScheme.primary,
                 width: 1,
               ),
             ),
@@ -231,8 +218,8 @@ class _TimerPageState extends State<TimerPage> {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF97316),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -274,10 +261,9 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildCircularTimer() {
-    final textColor =
-        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-    final ringColor =
-        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+    final theme = Theme.of(context);
+    final textColor = theme.colorScheme.onSurface;
+    final ringColor = theme.colorScheme.outlineVariant;
 
     return SizedBox(
       width: 192,
@@ -289,7 +275,7 @@ class _TimerPageState extends State<TimerPage> {
         width: 192,
         height: 192,
         ringColor: ringColor,
-        fillColor: const Color(0xFFF97316),
+        fillColor: theme.colorScheme.primary,
         strokeWidth: 8.0,
         strokeCap: StrokeCap.round,
         textStyle: TextStyle(
@@ -317,10 +303,9 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildProgressBar() {
-    final progressBg =
-        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
-    final textMuted =
-        _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+    final theme = Theme.of(context);
+    final progressBg = theme.colorScheme.outlineVariant;
+    final textMuted = theme.colorScheme.onSurfaceVariant;
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 384),
@@ -361,7 +346,7 @@ class _TimerPageState extends State<TimerPage> {
                       _duration,
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF97316),
+                  color: theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -373,10 +358,9 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildTimerControls() {
-    final buttonSecondaryBg =
-        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFF3F4F6);
-    final buttonSecondaryText =
-        _isDarkMode ? const Color(0xFFE5E7EB) : const Color(0xFF374151);
+    final theme = Theme.of(context);
+    final buttonSecondaryBg = theme.colorScheme.secondaryContainer;
+    final buttonSecondaryText = theme.colorScheme.onSecondaryContainer;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -424,7 +408,7 @@ class _TimerPageState extends State<TimerPage> {
             });
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF97316),
+            backgroundColor: theme.colorScheme.primary,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -435,14 +419,14 @@ class _TimerPageState extends State<TimerPage> {
             children: [
               Icon(
                 _isRunning ? Icons.pause : Icons.play_arrow,
-                color: Colors.white,
+                color: theme.colorScheme.onPrimary,
                 size: 20,
               ),
               const SizedBox(width: 8),
               Text(
                 _isRunning ? 'Pause' : 'Start Timer',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: theme.colorScheme.onPrimary,
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),
@@ -455,10 +439,9 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildNavigationControls() {
-    final buttonGhostText =
-        _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-    final disabledColor =
-        _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB);
+    final theme = Theme.of(context);
+    final buttonGhostText = theme.colorScheme.onSurfaceVariant;
+    final disabledColor = theme.colorScheme.outline;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -520,9 +503,9 @@ class _TimerPageState extends State<TimerPage> {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(_people.length, (index) {
         final isActive = index == _currentPersonIndex;
-        const activeDotColor = Color(0xFFF97316);
-        final inactiveDotColor =
-            _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB);
+        final theme = Theme.of(context);
+        final activeDotColor = theme.colorScheme.primary;
+        final inactiveDotColor = theme.colorScheme.outline;
 
         return GestureDetector(
           onTap: () => setState(() {
@@ -545,13 +528,11 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildPeopleSection() {
-    final cardBg = _isDarkMode ? const Color(0xFF1F2937) : Colors.white;
-    final borderColor =
-        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
-    final textPrimary =
-        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-    final textSecondary =
-        _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280);
+    final theme = Theme.of(context);
+    final cardBg = theme.colorScheme.surface;
+    final borderColor = theme.colorScheme.outline;
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = theme.colorScheme.onSurfaceVariant;
 
     return Container(
       decoration: BoxDecoration(
@@ -595,12 +576,12 @@ class _TimerPageState extends State<TimerPage> {
                     });
                   },
                   style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFF97316),
+                    backgroundColor: theme.colorScheme.primary,
                     padding: const EdgeInsets.all(6),
                   ),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add,
-                    color: Colors.white,
+                    color: theme.colorScheme.onPrimary,
                     size: 16,
                   ),
                 ),
@@ -623,24 +604,16 @@ class _TimerPageState extends State<TimerPage> {
                             itemBuilder: (context, index) {
                               final isActive = index == _currentPersonIndex;
                               final itemBg = isActive
-                                  ? (_isDarkMode
-                                      ? const Color(0xFF431407)
-                                      : const Color(0xFFFEF3C7))
-                                  : (_isDarkMode
-                                      ? const Color(0xFF374151)
-                                      : const Color(0xFFF9FAFB));
+                                  ? theme.colorScheme.primaryContainer
+                                  : theme.colorScheme.surfaceContainerHighest;
                               final itemBorder = isActive
-                                  ? (_isDarkMode
-                                      ? const Color(0xFF92400E)
-                                      : const Color(0xFFFBBF24))
+                                  ? theme.colorScheme.primary
                                   : Colors.transparent;
                               final itemText = isActive
-                                  ? (_isDarkMode
-                                      ? const Color(0xFFFBBF24)
-                                      : const Color(0xFFB45309))
+                                  ? theme.colorScheme.onPrimaryContainer
                                   : textPrimary;
                               final dotColor = isActive
-                                  ? const Color(0xFFF97316)
+                                  ? theme.colorScheme.primary
                                   : textSecondary;
 
                               return Container(
@@ -674,9 +647,7 @@ class _TimerPageState extends State<TimerPage> {
                                       onPressed: () => _removePerson(index),
                                       icon: Icon(
                                         Icons.close,
-                                        color: _isDarkMode
-                                            ? const Color(0xFF6B7280)
-                                            : const Color(0xFF9CA3AF),
+                                        color: theme.colorScheme.onSurfaceVariant,
                                         size: 16,
                                       ),
                                       style: IconButton.styleFrom(
@@ -699,19 +670,14 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildAddPersonWidget() {
-    final inputBg = _isDarkMode ? const Color(0xFF374151) : Colors.white;
-    final inputBorder =
-        _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB);
-    final inputText =
-        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-    final placeholderText =
-        _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-    final addPersonBg =
-        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB);
-    final buttonSecondaryBg =
-        _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB);
-    final buttonSecondaryText =
-        _isDarkMode ? const Color(0xFFE5E7EB) : const Color(0xFF374151);
+    final theme = Theme.of(context);
+    final inputBg = theme.colorScheme.surface;
+    final inputBorder = theme.colorScheme.outline;
+    final inputText = theme.colorScheme.onSurface;
+    final placeholderText = theme.colorScheme.onSurfaceVariant;
+    final addPersonBg = theme.colorScheme.surfaceContainerHighest;
+    final buttonSecondaryBg = theme.colorScheme.secondaryContainer;
+    final buttonSecondaryText = theme.colorScheme.onSecondaryContainer;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -739,10 +705,10 @@ class _TimerPageState extends State<TimerPage> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: inputBorder),
               ),
-              focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 borderSide: BorderSide(
-                  color: Color(0xFFF97316),
+                  color: theme.colorScheme.primary,
                   width: 2,
                 ),
               ),
@@ -757,17 +723,17 @@ class _TimerPageState extends State<TimerPage> {
               ElevatedButton(
                 onPressed: _addPerson,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF97316),
+                  backgroundColor: theme.colorScheme.primary,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Add Member',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: theme.colorScheme.onPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -806,10 +772,9 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildEmptyState() {
-    final iconColor =
-        _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB);
-    final textMuted =
-        _isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF);
+    final theme = Theme.of(context);
+    final iconColor = theme.colorScheme.outline;
+    final textMuted = theme.colorScheme.onSurfaceVariant;
 
     return Center(
       child: Column(
@@ -842,13 +807,11 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   Widget _buildSessionInfo() {
-    final cardBg = _isDarkMode ? const Color(0xFF1F2937) : Colors.white;
-    final borderColor =
-        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
-    final textPrimary =
-        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-    final textSecondary =
-        _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280);
+    final theme = Theme.of(context);
+    final cardBg = theme.colorScheme.surface;
+    final borderColor = theme.colorScheme.outline;
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = theme.colorScheme.onSurfaceVariant;
 
     return Container(
       decoration: BoxDecoration(
