@@ -26,18 +26,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Daily Standup Timer',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.transparent,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
+    return YaruTheme(
+      child: MaterialApp(
+        title: 'Daily Standup Timer',
+        theme: yaruLight,
+        darkTheme: yaruDark,
+        debugShowCheckedModeBanner: false,
+        home: const TimerPage(),
       ),
-      debugShowCheckedModeBanner: false,
-      home: const TimerPage(),
     );
   }
 }
@@ -133,124 +129,30 @@ class _TimerPageState extends State<TimerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-        _isDarkMode ? const Color(0xFF111827) : const Color(0xFFF9FAFB);
-
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: const YaruWindowTitleBar(),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: _buildTimerSection(),
+            ),
+            const SizedBox(width: 24),
+            Expanded(
+              flex: 1,
+              child: Column(
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: _buildTimerSection(),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      children: [
-                        Expanded(child: _buildPeopleSection()),
-                        const SizedBox(height: 16),
-                        _buildSessionInfo(),
-                      ],
-                    ),
-                  ),
+                  Expanded(child: _buildPeopleSection()),
+                  const SizedBox(height: 16),
+                  _buildSessionInfo(),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    final headerBg = _isDarkMode ? const Color(0xFF1F2937) : Colors.white;
-    final borderColor =
-        _isDarkMode ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
-    final textColor =
-        _isDarkMode ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-    final buttonColor =
-        _isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: headerBg,
-        border: Border(
-          bottom: BorderSide(
-            color: borderColor,
-            width: 1,
-          ),
+          ],
         ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF97316),
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                ),
-                child: const Icon(
-                  Icons.access_time,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Daily Standup Timer',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _isDarkMode = !_isDarkMode;
-                  });
-                },
-                icon: Icon(
-                  _isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                  color: buttonColor,
-                  size: 20,
-                ),
-                style: IconButton.styleFrom(
-                  padding: const EdgeInsets.all(8),
-                ),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.settings,
-                  color: buttonColor,
-                  size: 20,
-                ),
-                style: IconButton.styleFrom(
-                  padding: const EdgeInsets.all(8),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
