@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
         title: 'Daily Standup Timer',
         theme: yaruLight,
         darkTheme: yaruDark,
+        themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
         home: const TimerPage(),
       ),
@@ -51,7 +52,6 @@ class _TimerPageState extends State<TimerPage> {
 
   final int _duration = 120; // Seconds
   bool _isRunning = false;
-  bool _isDarkMode = false;
 
   int _currentPersonIndex = 0;
   List<String> _people = [];
@@ -70,6 +70,8 @@ class _TimerPageState extends State<TimerPage> {
     _nameController.dispose();
     super.dispose();
   }
+
+  bool get _isDarkMode => Theme.of(context).brightness == Brightness.dark;
 
   String _formatTime(int seconds) {
     final mins = seconds ~/ 60;
@@ -380,6 +382,36 @@ class _TimerPageState extends State<TimerPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton(
+          onPressed: _resetTimer,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: buttonSecondaryBg,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.refresh,
+                color: buttonSecondaryText,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Reset',
+                style: TextStyle(
+                  color: buttonSecondaryText,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        ElevatedButton(
           onPressed: () {
             setState(() {
               if (_isRunning) {
@@ -411,36 +443,6 @@ class _TimerPageState extends State<TimerPage> {
                 _isRunning ? 'Pause' : 'Start Timer',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        ElevatedButton(
-          onPressed: _resetTimer,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: buttonSecondaryBg,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.refresh,
-                color: buttonSecondaryText,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Reset',
-                style: TextStyle(
-                  color: buttonSecondaryText,
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),
