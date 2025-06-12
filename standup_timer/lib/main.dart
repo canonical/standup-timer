@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:standup/comic.dart';
+import 'comic.dart';
 import 'package:window_size/window_size.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'dart:math'; // Add this import
