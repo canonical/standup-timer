@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:yaru/yaru.dart';
 import 'comic.dart';
 import 'package:window_size/window_size.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'dart:math'; // Add this import
 import 'package:desktop_window/desktop_window.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Set the window size to a square (e.g., 600x600)
+  await YaruWindowTitleBar.ensureInitialized();
   setWindowTitle('Stand Up Timer App');
-  DesktopWindow.setWindowSize(Size(700,700));
-
-
+  await DesktopWindow.setWindowSize(const Size(700, 700));
 
   runApp(const MyApp());
 }
@@ -28,12 +26,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Standup Timer',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const TimerPage(),
+    return YaruTheme(
+      builder: (context, yaru, child) {
+        return MaterialApp(
+          title: 'Stand-up Timer',
+          theme: yaru.theme,
+          darkTheme: yaru.darkTheme,
+          themeMode: ThemeMode.system,
+          debugShowCheckedModeBanner: false,
+          home: const TimerPage(),
+        );
+      },
     );
   }
 }
@@ -68,9 +71,8 @@ class _TimerPageState extends State<TimerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Standup Timer'),
-        centerTitle: true,
+      appBar: const YaruWindowTitleBar(
+        title: Text('Stand-up Timer'),
       ),
       body: Container(
         // decoration: BoxDecoration(
@@ -102,8 +104,13 @@ class _TimerPageState extends State<TimerPage> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          isSelected ? Colors.blue[100] : Colors.grey[300],
+                      // Yaru-orange (or user accent) when ON,
+                      // neutral surfaceVariant when OFF
+                      backgroundColor: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.primaryContainer,
+                      foregroundColor:
+                          Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
                     child: Text(name),
                   );
@@ -121,7 +128,8 @@ class _TimerPageState extends State<TimerPage> {
                           _isRunning
                               ? const Text("🎆")
                               // : const ComicScreen(),
-                              : const Text ('Ready?', style: TextStyle(fontSize: 40)),
+                              : const Text('Ready?',
+                                  style: TextStyle(fontSize: 40)),
                           ElevatedButton(
                             onPressed: () {
                               setState(() {
@@ -133,13 +141,19 @@ class _TimerPageState extends State<TimerPage> {
                               });
                             },
                             child: const Text('Start'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
                           ),
                           Text(
                             // Compute the expected time based on the number of selected names
                             '\nExpected time: ${_selectedNames.where((name) => name).length * _duration ~/ 60} min',
                             style: TextStyle(
                               fontSize: 20,
-                              color: Color.fromARGB(255, 0, 0, 0),
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -153,20 +167,30 @@ class _TimerPageState extends State<TimerPage> {
                             controller: _controller,
                             width: 250,
                             height: 250,
-                            ringColor: Colors.grey,
+                            ringColor: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer,
                             fillColor: _isRunning
-                                ? Colors.blue
-                                : Colors.blueGrey.shade500, // Color change
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .primary // animated fill
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .tertiaryContainer,
                             strokeWidth: 10.0,
                             strokeCap: StrokeCap.round,
-                            textStyle: _isRunning
-                                ? const TextStyle(fontSize: 44.0)
-                                    .copyWith(color: Colors.grey.shade700)
-                                : const TextStyle(fontSize: 44.0).copyWith(
-                                    color: Colors.blueGrey
-                                        .shade500), // Text color change
+                            textStyle: TextStyle(
+                              fontSize: 44,
+                              // choose the colour based on _isRunning
+                              color: _isRunning
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onSurface // Yaru-aware
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                            ),
                             textFormat: CountdownTextFormat.MM_SS,
-
                             isReverse: true,
                             isReverseAnimation: true,
                             onComplete: () {
@@ -192,9 +216,10 @@ class _TimerPageState extends State<TimerPage> {
                                     _whosTalkingIndex < _allNames.length
                                 ? _allNames[_whosTalkingIndex]
                                 : "🎆",
-                            style: const TextStyle(
-                                fontSize: 40,
-                                color: Color.fromRGBO(50, 50, 50, 1)),
+                            style: TextStyle(
+                              fontSize: 40,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                           const SizedBox(height: 20),
                           Row(
@@ -213,6 +238,12 @@ class _TimerPageState extends State<TimerPage> {
                                     }
                                   });
                                 },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
                                 child: Text(_isRunning ? 'Stop' : 'Resume'),
                               ),
                               const SizedBox(width: 20),
@@ -238,6 +269,12 @@ class _TimerPageState extends State<TimerPage> {
                                     }
                                   });
                                 },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
                                 child: const Text(
                                   'Next person',
                                 ),
@@ -256,6 +293,12 @@ class _TimerPageState extends State<TimerPage> {
                                         _selectedNames.indexOf(true);
                                   });
                                 },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
                                 child: const Text('Restart'),
                               ),
                             ],
