@@ -23,7 +23,7 @@ You can quickly include/exclude speakers and see the total expected meeting time
 
   ```bash
   git clone git@github.com:canonical/standup-timer.git
-  cd standup-timer/standup_timer
+  cd standup-timer/
   flutter config --enable-linux-desktop
   flutter run -d linux
   ```
