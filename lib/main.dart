@@ -6,6 +6,7 @@ import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'dart:math';
 import 'package:desktop_window/desktop_window.dart';
 import 'package:clipboard/clipboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,15 +63,30 @@ class _TimerPageState extends State<TimerPage> {
   @override
   void initState() {
     super.initState();
-    _people = List.from(_defaultNames);
-    final random = Random.secure();
-    _people.shuffle(random);
+    _loadSavedParticipants();
+  }
+
+  Future<void> _loadSavedParticipants() async {
+    final savedParticipants = await _loadParticipantList();
+    setState(() {
+      _people = savedParticipants;
+    });
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveParticipantList() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('participants', _people);
+  }
+
+  Future<List<String>> _loadParticipantList() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList('participants') ?? [];
   }
 
 
@@ -82,6 +98,7 @@ class _TimerPageState extends State<TimerPage> {
         _nameController.clear();
         _showAddPerson = false;
       });
+      _saveParticipantList();
     }
   }
 
@@ -104,6 +121,7 @@ class _TimerPageState extends State<TimerPage> {
             _people.shuffle(random);
             _currentPersonIndex = 0;
           });
+          _saveParticipantList();
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -144,6 +162,7 @@ class _TimerPageState extends State<TimerPage> {
         _currentPersonIndex = 0;
       }
     });
+    _saveParticipantList();
   }
 
   void _previousPerson() {
