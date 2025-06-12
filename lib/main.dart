@@ -141,9 +141,21 @@ class _TimerPageState extends State<TimerPage> {
     return Focus(
       autofocus: true,
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
-          _toggleTimer();
-          return KeyEventResult.handled;
+        if (event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.space) {
+            _toggleTimer();
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+            if (_currentPersonIndex > 0) {
+              _previousPerson();
+            }
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+            if (_currentPersonIndex < _people.length - 1) {
+              _nextPerson();
+            }
+            return KeyEventResult.handled;
+          }
         }
         return KeyEventResult.ignored;
       },
