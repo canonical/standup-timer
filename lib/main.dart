@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yaru/yaru.dart';
 import 'package:window_size/window_size.dart';
-import 'package:circular_countdown_timer/circular_countdown_timer.dart';
-import 'dart:math';
 import 'package:desktop_window/desktop_window.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'widgets/timer_section.dart';
 import 'widgets/people_section.dart';
 import 'widgets/session_info.dart';
-import 'services/participant_service.dart';
+import 'providers/timer_provider.dart';
+import 'providers/participants_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,15 +16,8 @@ Future<void> main() async {
   setWindowTitle('Daily Standup Timer');
   await DesktopWindow.setWindowSize(const Size(1200, 800));
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
-
-List<String> _defaultNames = [
-  'Alice Johnson',
-  'Bob Smith',
-  'Carol Davis',
-  'David Wilson',
-];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -44,46 +37,29 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class TimerPage extends StatefulWidget {
+class TimerPage extends ConsumerStatefulWidget {
   const TimerPage({super.key});
 
   @override
-  State<TimerPage> createState() => _TimerPageState();
+  ConsumerState<TimerPage> createState() => _TimerPageState();
 }
 
-class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
-  final CountDownController _controller = CountDownController();
+class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserver {
   final TextEditingController _nameController = TextEditingController();
-
-  final int _duration = 120; // Seconds
-  bool _isRunning = false;
-
-  int _currentPersonIndex = 0;
-  List<String> _people = [];
-  bool _showAddPerson = false;
-  bool _hasValidClipboardContent = false;
+  final GlobalKey _timerSectionKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadSavedParticipants();
-    _checkClipboardContent();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      _checkClipboardContent();
+      ref.read(participantsProvider.notifier).checkClipboardContent();
     }
-  }
-
-  Future<void> _loadSavedParticipants() async {
-    final savedParticipants = await ParticipantService.loadParticipantList();
-    setState(() {
-      _people = savedParticipants;
-    });
   }
 
   @override
@@ -93,62 +69,32 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  Future<void> _saveParticipantList() async {
-    await ParticipantService.saveParticipantList(_people);
-  }
-
-  Future<void> _checkClipboardContent() async {
-    final hasValid = await ParticipantService.hasValidClipboardContent();
-    setState(() {
-      _hasValidClipboardContent = hasValid;
-    });
-  }
-
   void _addPerson() {
     if (_nameController.text.trim().isNotEmpty) {
-      setState(() {
-        _people.add(_nameController.text.trim());
-        _nameController.clear();
-        _showAddPerson = false;
-      });
-      _saveParticipantList();
+      ref.read(participantsProvider.notifier).addPerson(_nameController.text.trim());
+      _nameController.clear();
     }
   }
 
   Future<void> _pasteParticipantList() async {
     try {
-      final clipboardData = await ParticipantService.getClipboardContent();
-      if (clipboardData.isNotEmpty) {
-        final participants =
-            ParticipantService.parseParticipantList(clipboardData);
-        if (participants.isNotEmpty) {
-          setState(() {
-            _people.clear();
-            _people.addAll(participants);
-            final random = Random.secure();
-            _people.shuffle(random);
-            _currentPersonIndex = 0;
-          });
-          _saveParticipantList();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    'Added ${participants.length} ${participants.length == 1 ? 'participant' : 'participants'}'),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
+      final addedCount = await ref.read(participantsProvider.notifier).pasteParticipantList();
+      if (mounted) {
+        String message;
+        if (addedCount > 0) {
+          message = 'Added $addedCount new ${addedCount == 1 ? 'participant' : 'participants'}';
+          // Reset timer when new participants are added
+          ref.read(timerProvider.notifier).resetTimer();
         } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No valid participants found in clipboard'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          }
+          message = 'No new participants added (duplicates were skipped)';
         }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -160,90 +106,58 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
         );
       }
     }
-
-    _checkClipboardContent();
   }
 
   void _removePerson(int index) {
-    setState(() {
-      _people.removeAt(index);
-      if (_currentPersonIndex >= _people.length && _people.isNotEmpty) {
-        _currentPersonIndex = _people.length - 1;
-      } else if (_people.isEmpty) {
-        _currentPersonIndex = 0;
-        _controller.restart(duration: _duration);
-        _controller.pause();
-        _isRunning = false;
-      }
-    });
-    _saveParticipantList();
-  }
-
-  void _clearAllParticipants() {
-    setState(() {
-      _people.clear();
-      _currentPersonIndex = 0;
-      _controller.restart(duration: _duration);
-      _controller.pause();
-      _isRunning = false;
-    });
-    _saveParticipantList();
-  }
-
-  void _shuffleParticipants() {
-    if (_people.length > 1) {
-      setState(() {
-        final random = Random.secure();
-        _people.shuffle(random);
-        _currentPersonIndex = 0;
-      });
-      _saveParticipantList();
+    ref.read(participantsProvider.notifier).removePerson(index);
+    final participantsState = ref.read(participantsProvider);
+    if (participantsState.people.isEmpty) {
+      ref.read(timerProvider.notifier).resetTimer();
     }
   }
 
+  void _clearAllParticipants() {
+    ref.read(participantsProvider.notifier).clearAllParticipants();
+    ref.read(timerProvider.notifier).resetTimer();
+  }
+
+  void _shuffleParticipants() {
+    ref.read(participantsProvider.notifier).shuffleParticipants();
+  }
+
   void _previousPerson() {
-    if (_currentPersonIndex > 0) {
-      setState(() {
-        _currentPersonIndex--;
-        _controller.restart(duration: _duration);
-        _isRunning = true;
-      });
+    final participantsState = ref.read(participantsProvider);
+    if (participantsState.currentPersonIndex > 0) {
+      ref.read(participantsProvider.notifier).previousPerson();
+      ref.read(timerProvider.notifier).restartTimer();
     }
   }
 
   void _nextPerson() {
-    if (_currentPersonIndex < _people.length - 1) {
-      setState(() {
-        _currentPersonIndex++;
-        _controller.restart(duration: _duration);
-        _isRunning = true;
-      });
+    final participantsState = ref.read(participantsProvider);
+    if (participantsState.currentPersonIndex < participantsState.people.length - 1) {
+      ref.read(participantsProvider.notifier).nextPerson();
+      ref.read(timerProvider.notifier).restartTimer();
     }
   }
 
   void _toggleTimer() {
-    setState(() {
-      if (_isRunning) {
-        _controller.pause();
-        _isRunning = false;
-      } else {
-        _controller.start();
-        _isRunning = true;
-      }
-    });
+    final participantsState = ref.read(participantsProvider);
+    if (participantsState.people.isEmpty) return;
+    
+    ref.read(timerProvider.notifier).toggleTimer();
   }
 
   void _resetTimer() {
-    setState(() {
-      _controller.restart(duration: _duration);
-      _controller.pause();
-      _isRunning = false;
-      _currentPersonIndex = 0;
-    });
+    ref.read(timerProvider.notifier).resetTimer();
+    ref.read(participantsProvider.notifier).setCurrentPersonIndex(0);
   }
 
   @override
   Widget build(BuildContext context) {
+    final timerState = ref.watch(timerProvider);
+    final participantsState = ref.watch(participantsProvider);
+    
     return Focus(
       autofocus: true,
       onKeyEvent: (node, event) {
@@ -260,12 +174,14 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
             _pasteParticipantList();
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            if (_currentPersonIndex > 0) {
+            final participantsState = ref.read(participantsProvider);
+            if (participantsState.currentPersonIndex > 0) {
               _previousPerson();
             }
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-            if (_currentPersonIndex < _people.length - 1) {
+            final participantsState = ref.read(participantsProvider);
+            if (participantsState.currentPersonIndex < participantsState.people.length - 1) {
               _nextPerson();
             }
             return KeyEventResult.handled;
@@ -278,150 +194,153 @@ class _TimerPageState extends State<TimerPage> with WidgetsBindingObserver {
         body: LayoutBuilder(
           builder: (context, constraints) {
             final isNarrow = constraints.maxWidth < 800;
-            
+            final hasEnoughHeight = constraints.maxHeight > 550;
+            final showPeople = hasEnoughHeight;
+
             return Padding(
               padding: EdgeInsets.all(isNarrow ? 12.0 : 24.0),
               child: isNarrow
                   ? Column(
                       children: [
                         Expanded(
-                          flex: 2,
+                          flex: showPeople ? 2 : 3,
                           child: TimerSection(
-                            controller: _controller,
-                            duration: _duration,
-                            isRunning: _isRunning,
-                            currentPersonIndex: _currentPersonIndex,
-                            people: _people,
+                            key: _timerSectionKey,
+                            controller: timerState.controller,
+                            duration: timerState.duration,
+                            isRunning: timerState.isRunning,
+                            currentPersonIndex: participantsState.currentPersonIndex,
+                            people: participantsState.people,
+                            showTeamMembersHeader: isNarrow && !showPeople,
                             onToggleTimer: _toggleTimer,
                             onResetTimer: _resetTimer,
                             onPreviousPerson: _previousPerson,
                             onNextPerson: _nextPerson,
                             onPersonSelected: (index) {
-                              setState(() {
-                                _currentPersonIndex = index;
-                                _controller.restart(duration: _duration);
-                                _isRunning = true;
-                              });
+                              ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                              ref.read(timerProvider.notifier).restartTimer();
                             },
                             onTimerComplete: () {
-                              setState(() {
-                                if (_currentPersonIndex < _people.length - 1) {
-                                  _currentPersonIndex++;
-                                  _controller.restart(duration: _duration);
-                                  _isRunning = true;
-                                } else {
-                                  _isRunning = false;
-                                  _controller.pause();
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  final currentParticipants = ref.read(participantsProvider);
+                                  if (currentParticipants.currentPersonIndex < currentParticipants.people.length - 1) {
+                                    ref.read(participantsProvider.notifier).nextPerson();
+                                    ref.read(timerProvider.notifier).restartTimer();
+                                  } else {
+                                    ref.read(timerProvider.notifier).setRunning(false);
+                                  }
                                 }
                               });
                             },
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: PeopleSection(
-                                  people: _people,
-                                  currentPersonIndex: _currentPersonIndex,
-                                  showAddPerson: _showAddPerson,
-                                  hasValidClipboardContent: _hasValidClipboardContent,
-                                  nameController: _nameController,
-                                  onAddPerson: _addPerson,
-                                  onRemovePerson: _removePerson,
-                                  onToggleAddPerson: () {
-                                    setState(() {
-                                      _showAddPerson = true;
-                                    });
-                                  },
-                                  onCancelAddPerson: () {
-                                    setState(() {
-                                      _showAddPerson = false;
+                        if (isNarrow && showPeople) ...[
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: PeopleSection(
+                                    people: participantsState.people,
+                                    currentPersonIndex: participantsState.currentPersonIndex,
+                                    showAddPerson: participantsState.showAddPerson,
+                                    hasValidClipboardContent:
+                                        participantsState.hasValidClipboardContent,
+                                    nameController: _nameController,
+                                    onAddPerson: _addPerson,
+                                    onRemovePerson: _removePerson,
+                                    onToggleAddPerson: () {
+                                      ref.read(participantsProvider.notifier).setShowAddPerson(true);
+                                    },
+                                    onCancelAddPerson: () {
+                                      ref.read(participantsProvider.notifier).setShowAddPerson(false);
                                       _nameController.clear();
-                                    });
-                                  },
-                                  onPasteParticipantList: _pasteParticipantList,
-                                  onClearAllParticipants: _clearAllParticipants,
-                                  onShuffleParticipants: _shuffleParticipants,
+                                    },
+                                    onPasteParticipantList: _pasteParticipantList,
+                                    onClearAllParticipants: _clearAllParticipants,
+                                    onShuffleParticipants: _shuffleParticipants,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              SessionInfo(people: _people),
-                            ],
+                                const SizedBox(height: 8),
+                                SessionInfo(people: participantsState.people),
+                              ],
+                            ),
                           ),
-                        ),
+                        ] else
+                          SessionInfo(people: participantsState.people),
                       ],
                     )
                   : Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: PeopleSection(
-                                  people: _people,
-                                  currentPersonIndex: _currentPersonIndex,
-                                  showAddPerson: _showAddPerson,
-                                  hasValidClipboardContent: _hasValidClipboardContent,
-                                  nameController: _nameController,
-                                  onAddPerson: _addPerson,
-                                  onRemovePerson: _removePerson,
-                                  onToggleAddPerson: () {
-                                    setState(() {
-                                      _showAddPerson = true;
-                                    });
-                                  },
-                                  onCancelAddPerson: () {
-                                    setState(() {
-                                      _showAddPerson = false;
+                        if (showPeople) ...[
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: PeopleSection(
+                                    people: participantsState.people,
+                                    currentPersonIndex: participantsState.currentPersonIndex,
+                                    showAddPerson: participantsState.showAddPerson,
+                                    hasValidClipboardContent:
+                                        participantsState.hasValidClipboardContent,
+                                    nameController: _nameController,
+                                    onAddPerson: _addPerson,
+                                    onRemovePerson: _removePerson,
+                                    onToggleAddPerson: () {
+                                      ref.read(participantsProvider.notifier).setShowAddPerson(true);
+                                    },
+                                    onCancelAddPerson: () {
+                                      ref.read(participantsProvider.notifier).setShowAddPerson(false);
                                       _nameController.clear();
-                                    });
-                                  },
-                                  onPasteParticipantList: _pasteParticipantList,
-                                  onClearAllParticipants: _clearAllParticipants,
-                                  onShuffleParticipants: _shuffleParticipants,
+                                    },
+                                    onPasteParticipantList: _pasteParticipantList,
+                                    onClearAllParticipants: _clearAllParticipants,
+                                    onShuffleParticipants: _shuffleParticipants,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                              SessionInfo(people: _people),
-                            ],
+                                const SizedBox(height: 16),
+                                SessionInfo(people: participantsState.people),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 24),
+                          const SizedBox(width: 24),
+                        ] else ...[
+                          SizedBox(
+                            width: 320,
+                            child: SessionInfo(people: participantsState.people),
+                          ),
+                          const SizedBox(width: 24),
+                        ],
                         Expanded(
                           flex: 2,
                           child: TimerSection(
-                            controller: _controller,
-                            duration: _duration,
-                            isRunning: _isRunning,
-                            currentPersonIndex: _currentPersonIndex,
-                            people: _people,
+                            key: _timerSectionKey,
+                            controller: timerState.controller,
+                            duration: timerState.duration,
+                            isRunning: timerState.isRunning,
+                            currentPersonIndex: participantsState.currentPersonIndex,
+                            people: participantsState.people,
+                            showTeamMembersHeader: !showPeople,
                             onToggleTimer: _toggleTimer,
                             onResetTimer: _resetTimer,
                             onPreviousPerson: _previousPerson,
                             onNextPerson: _nextPerson,
                             onPersonSelected: (index) {
-                              setState(() {
-                                _currentPersonIndex = index;
-                                _controller.restart(duration: _duration);
-                                _isRunning = true;
-                              });
+                              ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                              ref.read(timerProvider.notifier).restartTimer();
                             },
                             onTimerComplete: () {
-                              setState(() {
-                                if (_currentPersonIndex < _people.length - 1) {
-                                  _currentPersonIndex++;
-                                  _controller.restart(duration: _duration);
-                                  _isRunning = true;
-                                } else {
-                                  _isRunning = false;
-                                  _controller.pause();
-                                }
-                              });
+                              final currentParticipants = ref.read(participantsProvider);
+                              if (currentParticipants.currentPersonIndex < currentParticipants.people.length - 1) {
+                                ref.read(participantsProvider.notifier).nextPerson();
+                                ref.read(timerProvider.notifier).restartTimer();
+                              } else {
+                                ref.read(timerProvider.notifier).setRunning(false);
+                              }
                             },
                           ),
                         ),

@@ -91,24 +91,28 @@ class _PeopleSectionState extends State<PeopleSection> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.people,
-                size: 20,
-                color: textSecondary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Team Members',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: textPrimary,
+          Expanded(
+            child: Row(
+              children: [
+                Icon(
+                  Icons.people,
+                  size: 20,
+                  color: textSecondary,
                 ),
-              ),
-              const SizedBox(width: 8),
-              PopupMenuButton<String>(
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Team Members',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                PopupMenuButton<String>(
                 onSelected: (value) {
                   if (value == 'clear') {
                     widget.onClearAllParticipants();
@@ -176,7 +180,8 @@ class _PeopleSectionState extends State<PeopleSection> {
                 ),
                 tooltip: 'Team options',
               ),
-            ],
+              ],
+            ),
           ),
           Row(
             children: [
@@ -221,7 +226,7 @@ class _PeopleSectionState extends State<PeopleSection> {
     
     return ListView.separated(
       itemCount: widget.people.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 8),
+      separatorBuilder: (context, index) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
         final isActive = index == widget.currentPersonIndex;
         final itemBg = isActive
@@ -238,23 +243,23 @@ class _PeopleSectionState extends State<PeopleSection> {
             : textSecondary;
 
         return Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: itemBg,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),
             border: Border.all(color: itemBorder),
           ),
           child: Row(
             children: [
               Container(
-                width: 10,
-                height: 10,
+                width: 8,
+                height: 8,
                 decoration: BoxDecoration(
                   color: dotColor,
                   shape: BoxShape.circle,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   widget.people[index],
@@ -272,7 +277,7 @@ class _PeopleSectionState extends State<PeopleSection> {
                   size: 16,
                 ),
                 style: IconButton.styleFrom(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(2),
                 ),
               ),
             ],

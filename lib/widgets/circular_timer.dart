@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/timer_provider.dart';
 
-class CircularTimer extends StatelessWidget {
+class CircularTimer extends ConsumerStatefulWidget {
   final CountDownController controller;
   final int duration;
   final VoidCallback onComplete;
@@ -14,36 +16,61 @@ class CircularTimer extends StatelessWidget {
   });
 
   @override
+  ConsumerState<CircularTimer> createState() => _CircularTimerState();
+}
+
+class _CircularTimerState extends ConsumerState<CircularTimer> {
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textColor = theme.colorScheme.onSurface;
     final ringColor = theme.colorScheme.outlineVariant;
 
-    return SizedBox(
-      width: 192,
-      height: 192,
-      child: CircularCountDownTimer(
-        duration: duration,
-        initialDuration: 0,
-        controller: controller,
-        width: 192,
-        height: 192,
-        ringColor: ringColor,
-        fillColor: theme.colorScheme.primary,
-        strokeWidth: 8.0,
-        strokeCap: StrokeCap.round,
-        textStyle: TextStyle(
-          fontSize: 40,
-          fontWeight: FontWeight.bold,
-          color: textColor,
-          fontFamily: 'monospace',
-        ),
-        textFormat: CountdownTextFormat.MM_SS,
-        isReverse: true,
-        isReverseAnimation: true,
-        autoStart: false,
-        onComplete: onComplete,
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate size based on available space with minimum of 100px, maximum of 400px
+        final availableSize = constraints.smallest.shortestSide;
+        final calculatedSize = availableSize * 0.8;
+        final timerSize = calculatedSize < 100.0 ? 100.0 : calculatedSize > 400.0 ? 400.0 : calculatedSize;
+        final fontSize = (timerSize / 5).clamp(20.0, 48.0);
+        
+        return SizedBox(
+          width: timerSize,
+          height: timerSize,
+          child: CircularCountDownTimer(
+            key: const ValueKey('countdown_timer_widget'),
+            duration: widget.duration,
+            initialDuration: 0,
+            controller: widget.controller,
+            width: timerSize,
+            height: timerSize,
+            ringColor: ringColor,
+            fillColor: theme.colorScheme.primary,
+            strokeWidth: 8.0,
+            strokeCap: StrokeCap.round,
+            textStyle: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+              fontFamily: 'monospace',
+            ),
+            textFormat: CountdownTextFormat.MM_SS,
+            isReverse: true,
+            isReverseAnimation: true,
+            autoStart: false,
+            onComplete: widget.onComplete,
+            onChange: (String timeStamp) {
+              final parts = timeStamp.split(':');
+              final minutes = int.parse(parts[0]);
+              final seconds = int.parse(parts[1]);
+              final newTime = minutes * 60 + seconds;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ref.read(timerProvider.notifier).updateCurrentTime(newTime);
+              });
+            },
+          ),
+        );
+      },
     );
   }
 }

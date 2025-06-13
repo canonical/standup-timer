@@ -17,6 +17,7 @@ class TimerSection extends StatelessWidget {
   final VoidCallback onNextPerson;
   final Function(int) onPersonSelected;
   final VoidCallback onTimerComplete;
+  final bool showTeamMembersHeader;
 
   const TimerSection({
     super.key,
@@ -31,6 +32,7 @@ class TimerSection extends StatelessWidget {
     required this.onNextPerson,
     required this.onPersonSelected,
     required this.onTimerComplete,
+    this.showTeamMembersHeader = false,
   });
 
   @override
@@ -53,6 +55,7 @@ class TimerSection extends StatelessWidget {
           CurrentSpeaker(
             currentPersonIndex: currentPersonIndex,
             people: people,
+            showTeamMembersHeader: showTeamMembersHeader,
           ),
           Container(
             width: double.infinity,
@@ -64,14 +67,20 @@ class TimerSection extends StatelessWidget {
               padding: EdgeInsets.all(isNarrow ? 16.0 : 32.0),
               child: Column(
                 children: [
-                  CircularTimer(
-                    controller: controller,
-                    duration: duration,
-                    onComplete: onTimerComplete,
+                  Expanded(
+                    child: Center(
+                      child: CircularTimer(
+                        key: const ValueKey('circular_timer'),
+                        controller: controller,
+                        duration: duration,
+                        onComplete: onTimerComplete,
+                      ),
+                    ),
                   ),
                   SizedBox(height: isNarrow ? 16 : 32),
                   TimerControls(
                     isRunning: isRunning,
+                    isDisabled: people.isEmpty,
                     onToggleTimer: onToggleTimer,
                     onResetTimer: onResetTimer,
                   ),
