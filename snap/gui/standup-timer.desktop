@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Stand-Up Timer
+Comment=A lightweight app to help run stand-up meetings
+Exec=standup-timer
+Type=Application
+Categories=Office;ProjectManagement;Clock;
+Icon=${SNAP}/meta/gui/standup-timer.svg
