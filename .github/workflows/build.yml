@@ -1,0 +1,45 @@
+name: Build
+permissions:
+  contents: read
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Release on schedule to ensure dependencies are up-to-date
+    - cron: "0 0 * * 0"
+
+jobs:
+  snap:
+    name: Snap
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build
+        id: snapcraft
+        uses: snapcore/action-build@v1
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapcraft-logs-amd64
+          path: |
+            /home/runner/.cache/snapcraft/log/
+            /home/runner/.local/state/snapcraft/log/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: standup-timer_amd64.snap
+          path: ${{ steps.snapcraft.outputs.snap }}
+      - name: Publish
+        if: github.ref == 'refs/heads/main'
+        uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_LOGIN }}
+        with:
+          snap: ${{ steps.snapcraft.outputs.snap }}
+          release: beta

@@ -1,0 +1,48 @@
+name: Promote
+permissions: {}
+on:
+  workflow_dispatch:
+    inputs:
+      to-channel:
+        description: Channel to promote to
+        required: true
+        default: latest/stable
+        type: choice
+        options:
+          - latest/stable
+          - latest/candidate
+      from-channel:
+        description: Channel to promote from
+        required: true
+        default: latest/beta
+        type: choice
+        options:
+          - latest/candidate
+          - latest/beta
+
+jobs:
+  snap:
+    name: Snap
+    runs-on: ubuntu-latest
+    env:
+      SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_LOGIN }}
+      SNAPCRAFT_TO_CHANNEL: ${{ github.event.inputs.to-channel }}
+      SNAPCRAFT_FROM_CHANNEL: ${{ github.event.inputs.from-channel }}
+    steps:
+      - name: Validate
+        run: |
+          echo "Snap: standup-timer"
+          echo "To channel: $SNAPCRAFT_TO_CHANNEL"
+          echo "From channel: $SNAPCRAFT_FROM_CHANNEL"
+          if [ "$SNAPCRAFT_TO_CHANNEL" = "$SNAPCRAFT_FROM_CHANNEL" ]; then
+            echo "::error::The 'to-channel' and 'from-channel' must be different."
+            exit 1
+          fi
+      - name: Install snapcraft
+        run: sudo snap install snapcraft --classic
+      - name: Promote snap
+        run: |
+          snapcraft promote --yes \
+            --to-channel "$SNAPCRAFT_TO_CHANNEL" \
+            --from-channel "$SNAPCRAFT_FROM_CHANNEL" \
+            standup-timer
