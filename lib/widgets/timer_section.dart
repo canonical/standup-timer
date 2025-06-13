@@ -4,6 +4,7 @@ import 'current_speaker.dart';
 import 'circular_timer.dart';
 import 'timer_controls.dart';
 import 'navigation_controls.dart';
+import '../comic.dart';
 
 class TimerSection extends StatelessWidget {
   final CountDownController controller;
@@ -43,6 +44,10 @@ class TimerSection extends StatelessWidget {
     
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 800;
+    
+    // Show XKCD comic when no participants or all speakers are done
+    final showComic = people.isEmpty || 
+        (people.isNotEmpty && currentPersonIndex >= people.length && !isRunning);
 
     return Container(
       decoration: BoxDecoration(
@@ -65,35 +70,37 @@ class TimerSection extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: EdgeInsets.all(isNarrow ? 16.0 : 32.0),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: CircularTimer(
-                        key: const ValueKey('circular_timer'),
-                        controller: controller,
-                        duration: duration,
-                        onComplete: onTimerComplete,
-                      ),
+              child: showComic
+                  ? const ComicScreen()
+                  : Column(
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: CircularTimer(
+                              key: const ValueKey('circular_timer'),
+                              controller: controller,
+                              duration: duration,
+                              onComplete: onTimerComplete,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: isNarrow ? 16 : 32),
+                        TimerControls(
+                          isRunning: isRunning,
+                          isDisabled: people.isEmpty,
+                          onToggleTimer: onToggleTimer,
+                          onResetTimer: onResetTimer,
+                        ),
+                        const Spacer(),
+                        NavigationControls(
+                          currentPersonIndex: currentPersonIndex,
+                          peopleCount: people.length,
+                          onPreviousPerson: onPreviousPerson,
+                          onNextPerson: onNextPerson,
+                          onPersonSelected: onPersonSelected,
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(height: isNarrow ? 16 : 32),
-                  TimerControls(
-                    isRunning: isRunning,
-                    isDisabled: people.isEmpty,
-                    onToggleTimer: onToggleTimer,
-                    onResetTimer: onResetTimer,
-                  ),
-                  const Spacer(),
-                  NavigationControls(
-                    currentPersonIndex: currentPersonIndex,
-                    peopleCount: people.length,
-                    onPreviousPerson: onPreviousPerson,
-                    onNextPerson: onNextPerson,
-                    onPersonSelected: onPersonSelected,
-                  ),
-                ],
-              ),
             ),
           ),
         ],
