@@ -14,6 +14,7 @@ class PeopleSection extends StatefulWidget {
   final VoidCallback onPasteParticipantList;
   final VoidCallback onClearAllParticipants;
   final VoidCallback onShuffleParticipants;
+  final Function(int)? onPersonSelected;
 
   const PeopleSection({
     super.key,
@@ -29,6 +30,7 @@ class PeopleSection extends StatefulWidget {
     required this.onPasteParticipantList,
     required this.onClearAllParticipants,
     required this.onShuffleParticipants,
+    this.onPersonSelected,
   });
 
   @override
@@ -224,25 +226,21 @@ class _PeopleSectionState extends State<PeopleSection> {
   Widget _buildPeopleList(BuildContext context, Color textPrimary, Color textSecondary) {
     final theme = Theme.of(context);
     
-    return ListView.separated(
+    return ListView.builder(
       itemCount: widget.people.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
-        final isActive = index == widget.currentPersonIndex;
-        final itemBg = isActive
-            ? theme.colorScheme.primaryContainer
-            : theme.colorScheme.surfaceContainerHighest;
-        final itemBorder = isActive
+        final isSelected = index == widget.currentPersonIndex;
+        final itemBg = isSelected
+            ? theme.colorScheme.surfaceContainerHighest
+            : theme.colorScheme.primaryContainer;
+        final itemBorder = isSelected
             ? theme.colorScheme.primary
             : Colors.transparent;
-        final itemText = isActive
-            ? theme.colorScheme.onPrimaryContainer
-            : textPrimary;
-        final dotColor = isActive
-            ? theme.colorScheme.primary
-            : textSecondary;
-
+        final itemText = isSelected
+            ? textPrimary
+            : theme.colorScheme.onPrimaryContainer;
         return Container(
+          margin: const EdgeInsets.only(bottom: 4),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: itemBg,
@@ -251,21 +249,15 @@ class _PeopleSectionState extends State<PeopleSection> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: dotColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  widget.people[index],
-                  style: TextStyle(
-                    color: itemText,
-                    fontWeight: FontWeight.w500,
+                child: GestureDetector(
+                  onTap: widget.onPersonSelected != null ? () => widget.onPersonSelected!(index) : null,
+                  child: Text(
+                    widget.people[index],
+                    style: TextStyle(
+                      color: itemText,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),

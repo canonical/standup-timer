@@ -12,6 +12,7 @@ class TimerSection extends StatelessWidget {
   final bool isRunning;
   final int currentPersonIndex;
   final List<String> people;
+  final int currentTime;
   final VoidCallback onToggleTimer;
   final VoidCallback onResetTimer;
   final VoidCallback onPreviousPerson;
@@ -27,6 +28,7 @@ class TimerSection extends StatelessWidget {
     required this.isRunning,
     required this.currentPersonIndex,
     required this.people,
+    required this.currentTime,
     required this.onToggleTimer,
     required this.onResetTimer,
     required this.onPreviousPerson,
@@ -45,8 +47,10 @@ class TimerSection extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 800;
     
-    // Show XKCD comic when no participants or all speakers are done
+    // Show XKCD comic when no participants, timer hasn't started, or all speakers are done
+    final timerInInitialState = currentTime == duration && !isRunning && currentPersonIndex == 0;
     final showComic = people.isEmpty || 
+        timerInInitialState ||
         (people.isNotEmpty && currentPersonIndex >= people.length && !isRunning);
 
     return Container(
@@ -71,15 +75,22 @@ class TimerSection extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(isNarrow ? 16.0 : 32.0),
               child: showComic
-                  ? const ComicScreen()
+                  ? ComicScreen(
+                      showTimerControls: people.isNotEmpty && timerInInitialState,
+                      isRunning: isRunning,
+                      isDisabled: people.isEmpty,
+                      onToggleTimer: onToggleTimer,
+                      onResetTimer: onResetTimer,
+                    )
                   : Column(
                       children: [
                         Expanded(
                           child: Center(
                             child: CircularTimer(
-                              key: const ValueKey('circular_timer'),
+                              key: ValueKey('circular_timer_$currentPersonIndex$duration'),
                               controller: controller,
                               duration: duration,
+                              isRunning: isRunning,
                               onComplete: onTimerComplete,
                             ),
                           ),

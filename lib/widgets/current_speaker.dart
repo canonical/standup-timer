@@ -17,55 +17,14 @@ class CurrentSpeaker extends StatelessWidget {
     final theme = Theme.of(context);
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = theme.colorScheme.onSurfaceVariant;
-    final accentBg = theme.colorScheme.primaryContainer;
-    final accentText = theme.colorScheme.onPrimaryContainer;
     
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 800;
 
     return Padding(
-      padding: EdgeInsets.all(isNarrow ? 12.0 : 32.0),
+      padding: EdgeInsets.all(isNarrow ? 12.0 : 24.0),
       child: Column(
         children: [
-          if (people.isNotEmpty) ...[
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: isNarrow ? 8 : 12, 
-                vertical: 4
-              ),
-              decoration: BoxDecoration(
-                color: accentBg,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: theme.colorScheme.primary,
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: isNarrow ? 6 : 8,
-                    height: isNarrow ? 6 : 8,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  SizedBox(width: isNarrow ? 6 : 8),
-                  Text(
-                    'Currently Speaking',
-                    style: TextStyle(
-                      color: accentText,
-                      fontSize: isNarrow ? 12 : 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: isNarrow ? 12 : 16),
-          ],
           SizedBox(
             width: double.infinity,
             child: Text(

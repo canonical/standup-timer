@@ -185,6 +185,9 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
               _nextPerson();
             }
             return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+            _resetTimer();
+            return KeyEventResult.handled;
           }
         }
         return KeyEventResult.ignored;
@@ -204,14 +207,17 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                       children: [
                         Expanded(
                           flex: showPeople ? 2 : 3,
-                          child: TimerSection(
-                            key: _timerSectionKey,
-                            controller: timerState.controller,
-                            duration: timerState.duration,
-                            isRunning: timerState.isRunning,
-                            currentPersonIndex: participantsState.currentPersonIndex,
-                            people: participantsState.people,
-                            showTeamMembersHeader: isNarrow && !showPeople,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 500),
+                            child: TimerSection(
+                              key: _timerSectionKey,
+                              controller: timerState.controller,
+                              duration: timerState.duration,
+                              isRunning: timerState.isRunning,
+                              currentPersonIndex: participantsState.currentPersonIndex,
+                              people: participantsState.people,
+                              currentTime: timerState.currentTime,
+                              showTeamMembersHeader: isNarrow && !showPeople,
                             onToggleTimer: _toggleTimer,
                             onResetTimer: _resetTimer,
                             onPreviousPerson: _previousPerson,
@@ -228,11 +234,14 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                     ref.read(participantsProvider.notifier).nextPerson();
                                     ref.read(timerProvider.notifier).restartTimer();
                                   } else {
+                                    // Last person finished - move to end state to show comic
+                                    ref.read(participantsProvider.notifier).setCurrentPersonIndex(currentParticipants.people.length);
                                     ref.read(timerProvider.notifier).setRunning(false);
                                   }
                                 }
                               });
                             },
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -261,6 +270,13 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                     onPasteParticipantList: _pasteParticipantList,
                                     onClearAllParticipants: _clearAllParticipants,
                                     onShuffleParticipants: _shuffleParticipants,
+                                    onPersonSelected: (index) {
+                                      final currentIndex = ref.read(participantsProvider).currentPersonIndex;
+                                      if (index != currentIndex) {
+                                        ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                                        ref.read(timerProvider.notifier).restartTimer();
+                                      }
+                                    },
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -300,6 +316,12 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                     onPasteParticipantList: _pasteParticipantList,
                                     onClearAllParticipants: _clearAllParticipants,
                                     onShuffleParticipants: _shuffleParticipants,
+                                    onPersonSelected: (index) {
+                                      print('Main: onPersonSelected called with index $index');
+                                      ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                                      ref.read(timerProvider.notifier).restartTimer();
+                                      print('Main: Person selection completed');
+                                    },
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -324,6 +346,7 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                             isRunning: timerState.isRunning,
                             currentPersonIndex: participantsState.currentPersonIndex,
                             people: participantsState.people,
+                            currentTime: timerState.currentTime,
                             showTeamMembersHeader: !showPeople,
                             onToggleTimer: _toggleTimer,
                             onResetTimer: _resetTimer,
@@ -339,6 +362,8 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                 ref.read(participantsProvider.notifier).nextPerson();
                                 ref.read(timerProvider.notifier).restartTimer();
                               } else {
+                                // Last person finished - move to end state to show comic
+                                ref.read(participantsProvider.notifier).setCurrentPersonIndex(currentParticipants.people.length);
                                 ref.read(timerProvider.notifier).setRunning(false);
                               }
                             },

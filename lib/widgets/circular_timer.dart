@@ -7,12 +7,14 @@ class CircularTimer extends ConsumerStatefulWidget {
   final CountDownController controller;
   final int duration;
   final VoidCallback onComplete;
+  final bool isRunning;
 
   const CircularTimer({
     super.key,
     required this.controller,
     required this.duration,
     required this.onComplete,
+    required this.isRunning,
   });
 
   @override
@@ -20,6 +22,30 @@ class CircularTimer extends ConsumerStatefulWidget {
 }
 
 class _CircularTimerState extends ConsumerState<CircularTimer> {
+  @override
+  void initState() {
+    super.initState();
+    // Ensure the timer starts if it should be running when first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.isRunning) {
+        widget.controller.start();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(CircularTimer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Respond to isRunning state changes
+    if (widget.isRunning != oldWidget.isRunning) {
+      if (widget.isRunning) {
+        widget.controller.start();
+      } else {
+        widget.controller.pause();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -64,9 +90,15 @@ class _CircularTimerState extends ConsumerState<CircularTimer> {
               final minutes = int.parse(parts[0]);
               final seconds = int.parse(parts[1]);
               final newTime = minutes * 60 + seconds;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ref.read(timerProvider.notifier).updateCurrentTime(newTime);
-              });
+              // Only update if the time actually changed to avoid unnecessary rebuilds
+              final currentTime = ref.read(timerProvider).currentTime;
+              if (newTime != currentTime) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    ref.read(timerProvider.notifier).updateCurrentTime(newTime);
+                  }
+                });
+              }
             },
           ),
         );

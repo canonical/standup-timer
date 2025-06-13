@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'widgets/timer_controls.dart';
 
 class Comic {
   final String title;
@@ -51,7 +52,20 @@ Future<Comic> fetchComic() async {
 }
 
 class ComicScreen extends StatelessWidget {
-  const ComicScreen({Key? key}) : super(key: key);
+  final bool showTimerControls;
+  final bool isRunning;
+  final bool isDisabled;
+  final VoidCallback? onToggleTimer;
+  final VoidCallback? onResetTimer;
+
+  const ComicScreen({
+    Key? key,
+    this.showTimerControls = false,
+    this.isRunning = false,
+    this.isDisabled = false,
+    this.onToggleTimer,
+    this.onResetTimer,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -79,13 +93,13 @@ class ComicScreen extends StatelessWidget {
                   Expanded(
                     child: Container(
                       width: constraints.maxWidth,
-                      height: constraints.maxHeight - 120, // Reserve space for title and caption
+                      height: constraints.maxHeight - (showTimerControls ? 180 : 120), // Reserve space for controls if needed
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Image.network(
                         comic.img,
                         fit: BoxFit.contain,
                         width: constraints.maxWidth - 32,
-                        height: constraints.maxHeight - 120,
+                        height: constraints.maxHeight - (showTimerControls ? 180 : 120),
                         loadingBuilder: (context, child, progress) {
                           if (progress == null) return child;
                           return const Center(child: CircularProgressIndicator());
@@ -105,6 +119,17 @@ class ComicScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                   ),
+                  if (showTimerControls) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: TimerControls(
+                        isRunning: isRunning,
+                        isDisabled: isDisabled,
+                        onToggleTimer: onToggleTimer ?? () {},
+                        onResetTimer: onResetTimer ?? () {},
+                      ),
+                    ),
+                  ],
                 ],
               );
             },

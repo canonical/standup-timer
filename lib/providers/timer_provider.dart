@@ -60,34 +60,71 @@ class TimerNotifier extends StateNotifier<TimerState> {
     await prefs.setInt(_durationKey, duration);
   }
 
-  void toggleTimer() {
-    if (state.isRunning) {
-      state.controller.pause();
-      state = state.copyWith(isRunning: false);
-    } else {
-      state.controller.start();
-      state = state.copyWith(isRunning: true);
-    }
-  }
-
-  void resetTimer() {
-    state.controller.restart(duration: state.duration);
-    state.controller.pause();
+  void _recreateController() {
+    final newController = CountDownController();
     state = state.copyWith(
+      controller: newController,
       isRunning: false,
       currentTime: state.duration,
     );
   }
 
-  void restartTimer() {
-    state.controller.restart(duration: state.duration);
-    state = state.copyWith(
-      currentTime: state.duration,
-    );
-    if (state.isRunning) {
-      state.controller.start();
-    } else {
+  void toggleTimer() {
+    print('TimerProvider: toggleTimer called, current isRunning: ${state.isRunning}');
+    try {
+      if (state.isRunning) {
+        print('TimerProvider: Pausing timer');
+        state.controller.pause();
+        state = state.copyWith(isRunning: false);
+      } else {
+        print('TimerProvider: Starting timer');
+        state.controller.start();
+        state = state.copyWith(isRunning: true);
+      }
+      print('TimerProvider: New isRunning state: ${state.isRunning}');
+    } catch (e) {
+      print('TimerProvider: Controller error: $e');
+      // Controller was disposed, create a new one
+      _recreateController();
+      if (!state.isRunning) {
+        print('TimerProvider: Starting timer with new controller');
+        state.controller.start();
+        state = state.copyWith(isRunning: true);
+      }
+    }
+  }
+
+  void resetTimer() {
+    try {
+      state.controller.restart(duration: state.duration);
       state.controller.pause();
+      state = state.copyWith(
+        isRunning: false,
+        currentTime: state.duration,
+      );
+    } catch (e) {
+      // Controller was disposed, create a new one
+      _recreateController();
+    }
+  }
+
+  void restartTimer() {
+    try {
+      state.controller.restart(duration: state.duration);
+      state = state.copyWith(
+        currentTime: state.duration,
+      );
+      if (state.isRunning) {
+        state.controller.start();
+      } else {
+        state.controller.pause();
+      }
+    } catch (e) {
+      // Controller was disposed, create a new one
+      _recreateController();
+      if (state.isRunning) {
+        state.controller.start();
+      }
     }
   }
 

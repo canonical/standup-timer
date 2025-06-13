@@ -21,7 +21,7 @@ class NavigationControls extends StatelessWidget {
     final theme = Theme.of(context);
     final buttonGhostText = theme.colorScheme.onSurfaceVariant;
     final disabledColor = theme.colorScheme.outline;
-    
+
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 800;
 
@@ -33,9 +33,7 @@ class NavigationControls extends StatelessWidget {
               onPressed: currentPersonIndex > 0 ? onPreviousPerson : null,
               style: TextButton.styleFrom(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isNarrow ? 4 : 8, 
-                  vertical: isNarrow ? 6 : 8
-                ),
+                    horizontal: isNarrow ? 4 : 8, vertical: isNarrow ? 6 : 8),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -44,14 +42,18 @@ class NavigationControls extends StatelessWidget {
                   Icon(
                     Icons.chevron_left,
                     size: isNarrow ? 14 : 16,
-                    color: currentPersonIndex > 0 ? buttonGhostText : disabledColor,
+                    color: currentPersonIndex > 0
+                        ? buttonGhostText
+                        : disabledColor,
                   ),
                   if (!isNarrow) ...[
                     const SizedBox(width: 4),
                     Text(
                       'Previous',
                       style: TextStyle(
-                        color: currentPersonIndex > 0 ? buttonGhostText : disabledColor,
+                        color: currentPersonIndex > 0
+                            ? buttonGhostText
+                            : disabledColor,
                         fontSize: 14,
                       ),
                     ),
@@ -73,9 +75,7 @@ class NavigationControls extends StatelessWidget {
                   currentPersonIndex < peopleCount - 1 ? onNextPerson : null,
               style: TextButton.styleFrom(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isNarrow ? 4 : 8, 
-                  vertical: isNarrow ? 6 : 8
-                ),
+                    horizontal: isNarrow ? 4 : 8, vertical: isNarrow ? 6 : 8),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -112,7 +112,7 @@ class NavigationControls extends StatelessWidget {
   Widget _buildDotNavigation(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 800;
-    
+
     final dots = List.generate(peopleCount, (index) {
       final isActive = index == currentPersonIndex;
       final theme = Theme.of(context);
@@ -146,7 +146,7 @@ class NavigationControls extends StatelessWidget {
         ),
       );
     }
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: dots,

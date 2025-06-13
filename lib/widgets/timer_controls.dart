@@ -23,36 +23,41 @@ class TimerControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ElevatedButton(
-          onPressed: onResetTimer,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: buttonSecondaryBg,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.refresh,
-                color: buttonSecondaryText,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Reset',
-                style: TextStyle(
-                  color: buttonSecondaryText,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
+        if (isRunning) ...[
+          Tooltip(
+            message: 'Esc',
+            child: ElevatedButton(
+              onPressed: onResetTimer,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: buttonSecondaryBg,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.refresh,
+                    color: buttonSecondaryText,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Reset',
+                    style: TextStyle(
+                      color: buttonSecondaryText,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
+          const SizedBox(width: 12),
+        ],
         Tooltip(
           message: 'Shift + Spacebar',
           child: ElevatedButton(

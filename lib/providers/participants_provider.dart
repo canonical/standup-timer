@@ -125,6 +125,7 @@ class ParticipantsNotifier extends StateNotifier<ParticipantsState> {
     }
   }
 
+
   void previousPerson() {
     if (state.currentPersonIndex > 0) {
       state = state.copyWith(currentPersonIndex: state.currentPersonIndex - 1);
