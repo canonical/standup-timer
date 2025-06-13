@@ -252,11 +252,15 @@ class _PeopleSectionState extends State<PeopleSection> {
               Expanded(
                 child: GestureDetector(
                   onTap: widget.onPersonSelected != null ? () => widget.onPersonSelected!(index) : null,
-                  child: Text(
-                    widget.people[index],
-                    style: TextStyle(
-                      color: itemText,
-                      fontWeight: FontWeight.w500,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      widget.people[index],
+                      style: TextStyle(
+                        color: itemText,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
