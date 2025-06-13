@@ -48,5 +48,4 @@ app.*.map.json
 /parts/
 /prime/
 /stage/
-/*.snap
-
+*.snap
