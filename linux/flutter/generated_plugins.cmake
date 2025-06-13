@@ -5,7 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_window
   gtk
-  screen_retriever
+  screen_retriever_linux
   window_manager
   window_size
   yaru_window_linux
