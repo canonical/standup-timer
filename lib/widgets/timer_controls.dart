@@ -74,14 +74,18 @@ class TimerControls extends StatelessWidget {
               children: [
                 Icon(
                   isRunning ? Icons.pause : Icons.play_arrow,
-                  color: isDisabled ? theme.colorScheme.onSurface.withOpacity(0.38) : theme.colorScheme.onPrimary,
+                  color: isDisabled
+                      ? theme.colorScheme.onSurface.withValues(alpha: 0.38)
+                      : theme.colorScheme.onPrimary,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   isRunning ? 'Pause' : 'Start Timer',
                   style: TextStyle(
-                    color: isDisabled ? theme.colorScheme.onSurface.withOpacity(0.38) : theme.colorScheme.onPrimary,
+                    color: isDisabled
+                        ? theme.colorScheme.onSurface.withValues(alpha: 0.38)
+                        : theme.colorScheme.onPrimary,
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),

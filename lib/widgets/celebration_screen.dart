@@ -45,7 +45,7 @@ class CelebrationScreen extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(isNarrow ? 12 : 16),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant,
+            color: theme.colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
