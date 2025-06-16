@@ -44,3 +44,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Snap packaging
+/parts/
+/prime/
+/stage/
+/*.snap
+

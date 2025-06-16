@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:yaru/yaru.dart';
-import 'comic.dart';
 import 'package:window_size/window_size.dart';
-import 'package:circular_countdown_timer/circular_countdown_timer.dart';
-import 'dart:math'; // Add this import
 import 'package:desktop_window/desktop_window.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'widgets/timer_section.dart';
+import 'widgets/people_section.dart';
+import 'widgets/session_info.dart';
+import 'providers/timer_provider.dart';
+import 'providers/participants_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await YaruWindowTitleBar.ensureInitialized();
-  setWindowTitle('Stand Up Timer App');
-  await DesktopWindow.setWindowSize(const Size(700, 700));
+  setWindowTitle('Daily Standup Timer');
+  await DesktopWindow.setWindowSize(const Size(1200, 800));
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
-
-List<String> _allNames = [
-  'Person 1',
-  'Person 2',
-  'Person 3',
-];
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -27,287 +25,354 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return YaruTheme(
-      builder: (context, yaru, child) {
-        return MaterialApp(
-          title: 'Stand-up Timer',
-          theme: yaru.theme,
-          darkTheme: yaru.darkTheme,
-          themeMode: ThemeMode.system,
-          debugShowCheckedModeBanner: false,
-          home: const TimerPage(),
-        );
-      },
+      child: MaterialApp(
+        title: 'Daily Standup Timer',
+        theme: yaruLight,
+        darkTheme: yaruDark,
+        themeMode: ThemeMode.system,
+        debugShowCheckedModeBanner: false,
+        home: const TimerPage(),
+      ),
     );
   }
 }
 
-class TimerPage extends StatefulWidget {
+class TimerPage extends ConsumerStatefulWidget {
   const TimerPage({super.key});
 
   @override
-  State<TimerPage> createState() => _TimerPageState();
+  ConsumerState<TimerPage> createState() => _TimerPageState();
 }
 
-class _TimerPageState extends State<TimerPage> {
-  final CountDownController _controller = CountDownController();
-
-  final int _duration = 120; // Seconds
-  bool _isRunning = false;
-  bool _isDone = true;
-
-  int _whosTalkingIndex = 0;
-
-  late List<bool> _selectedNames;
+class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserver {
+  final TextEditingController _nameController = TextEditingController();
+  final GlobalKey _timerSectionKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    final random = Random.secure(); // Use a secure random generator
-    _allNames.shuffle(random); // Shuffle the names
-    // Create a list of selected names 1 if the name is selected, 0 if not
-    _selectedNames = List<bool>.filled(_allNames.length, true);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      ref.read(participantsProvider.notifier).checkClipboardContent();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _addPerson() {
+    if (_nameController.text.trim().isNotEmpty) {
+      ref.read(participantsProvider.notifier).addPerson(_nameController.text.trim());
+      _nameController.clear();
+    }
+  }
+
+  Future<void> _pasteParticipantList() async {
+    try {
+      final addedCount = await ref.read(participantsProvider.notifier).pasteParticipantList();
+      if (mounted) {
+        String message;
+        if (addedCount > 0) {
+          message = 'Added $addedCount new ${addedCount == 1 ? 'participant' : 'participants'}';
+          // Reset timer when new participants are added
+          ref.read(timerProvider.notifier).resetTimer();
+        } else {
+          message = 'No new participants added (duplicates were skipped)';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to paste from clipboard'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  void _removePerson(int index) {
+    ref.read(participantsProvider.notifier).removePerson(index);
+    final participantsState = ref.read(participantsProvider);
+    if (participantsState.people.isEmpty) {
+      ref.read(timerProvider.notifier).resetTimer();
+    }
+  }
+
+  void _clearAllParticipants() {
+    ref.read(participantsProvider.notifier).clearAllParticipants();
+    ref.read(timerProvider.notifier).resetTimer();
+  }
+
+  void _shuffleParticipants() {
+    ref.read(participantsProvider.notifier).shuffleParticipants();
+  }
+
+  void _previousPerson() {
+    final participantsState = ref.read(participantsProvider);
+    if (participantsState.currentPersonIndex > 0) {
+      ref.read(participantsProvider.notifier).previousPerson();
+      ref.read(timerProvider.notifier).restartTimer();
+    }
+  }
+
+  void _nextPerson() {
+    final participantsState = ref.read(participantsProvider);
+    if (participantsState.currentPersonIndex < participantsState.people.length - 1) {
+      ref.read(participantsProvider.notifier).nextPerson();
+      ref.read(timerProvider.notifier).restartTimer();
+    }
+  }
+
+  void _toggleTimer() {
+    final participantsState = ref.read(participantsProvider);
+    if (participantsState.people.isEmpty) return;
+    
+    ref.read(timerProvider.notifier).toggleTimer();
+  }
+
+  void _resetTimer() {
+    ref.read(timerProvider.notifier).resetTimer();
+    ref.read(participantsProvider.notifier).setCurrentPersonIndex(0);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const YaruWindowTitleBar(
-        title: Text('Stand-up Timer'),
-      ),
-      body: Container(
-        // decoration: BoxDecoration(
-        //   image: DecorationImage(
-        //     image: AssetImage("assets/2025.jpg"),
-        //     fit: BoxFit.cover,
-        //   ),
-        // ),
-        child: Row(
-          children: [
-            // Left side: display the list of names with buttons
-            SizedBox(
-              width: 150, // Adjust the width as desired
-              child: ListView.separated(
-                itemCount: _allNames.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 8.0), // Add spacing
-                itemBuilder: (context, index) {
-                  final name = _allNames[index];
-                  final isSelected = _selectedNames[index];
-                  return ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        if (isSelected) {
-                          _selectedNames[index] = false;
-                        } else {
-                          _selectedNames[index] = true;
-                        }
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      // Yaru-orange (or user accent) when ON,
-                      // neutral surfaceVariant when OFF
-                      backgroundColor: isSelected
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.primaryContainer,
-                      foregroundColor:
-                          Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                    child: Text(name),
-                  );
-                },
-              ),
-            ),
-            // Right side: timer and controls
-            Expanded(
-              child: Center(
-                child: _isDone
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Replace the text with ComicScreen widget when not running
-                          _isRunning
-                              ? const Text("🎆")
-                              // : const ComicScreen(),
-                              : const Text('Ready?',
-                                  style: TextStyle(fontSize: 40)),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _isDone = false;
-                                _isRunning = true;
-                                _whosTalkingIndex =
-                                    _selectedNames.indexOf(true);
-                                _controller.restart(duration: _duration);
-                              });
+    final timerState = ref.watch(timerProvider);
+    final participantsState = ref.watch(participantsProvider);
+    
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.space &&
+              (event.logicalKey == LogicalKeyboardKey.shiftLeft ||
+                  event.logicalKey == LogicalKeyboardKey.shiftRight ||
+                  HardwareKeyboard.instance.isShiftPressed)) {
+            _toggleTimer();
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.keyV &&
+              (HardwareKeyboard.instance.isControlPressed ||
+                  HardwareKeyboard.instance.isMetaPressed)) {
+            _pasteParticipantList();
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+            final participantsState = ref.read(participantsProvider);
+            if (participantsState.currentPersonIndex > 0) {
+              _previousPerson();
+            }
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+            final participantsState = ref.read(participantsProvider);
+            if (participantsState.currentPersonIndex < participantsState.people.length - 1) {
+              _nextPerson();
+            }
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+            _resetTimer();
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Scaffold(
+        appBar: const YaruWindowTitleBar(),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 800;
+            final hasEnoughHeight = constraints.maxHeight > 550;
+            final showPeople = hasEnoughHeight;
+
+            return Padding(
+              padding: EdgeInsets.all(isNarrow ? 12.0 : 24.0),
+              child: isNarrow
+                  ? Column(
+                      children: [
+                        Expanded(
+                          flex: showPeople ? 2 : 3,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 500),
+                            child: TimerSection(
+                              key: _timerSectionKey,
+                              controller: timerState.controller,
+                              duration: timerState.duration,
+                              isRunning: timerState.isRunning,
+                              currentPersonIndex: participantsState.currentPersonIndex,
+                              people: participantsState.people,
+                              currentTime: timerState.currentTime,
+                              showTeamMembersHeader: isNarrow && !showPeople,
+                            onToggleTimer: _toggleTimer,
+                            onResetTimer: _resetTimer,
+                            onPreviousPerson: _previousPerson,
+                            onNextPerson: _nextPerson,
+                            onPersonSelected: (index) {
+                              ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                              ref.read(timerProvider.notifier).restartTimer();
                             },
-                            child: const Text('Start'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            // Compute the expected time based on the number of selected names
-                            '\nExpected time: ${_selectedNames.where((name) => name).length * _duration ~/ 60} min',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularCountDownTimer(
-                            duration: _duration,
-                            initialDuration: 0,
-                            controller: _controller,
-                            width: 250,
-                            height: 250,
-                            ringColor: Theme.of(context)
-                                .colorScheme
-                                .secondaryContainer,
-                            fillColor: _isRunning
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .primary // animated fill
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .tertiaryContainer,
-                            strokeWidth: 10.0,
-                            strokeCap: StrokeCap.round,
-                            textStyle: TextStyle(
-                              fontSize: 44,
-                              // choose the colour based on _isRunning
-                              color: _isRunning
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .onSurface // Yaru-aware
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                            ),
-                            textFormat: CountdownTextFormat.MM_SS,
-                            isReverse: true,
-                            isReverseAnimation: true,
-                            onComplete: () {
-                              setState(() {
-                                do {
-                                  _whosTalkingIndex++;
-                                } while (_whosTalkingIndex < _allNames.length &&
-                                    !_selectedNames[_whosTalkingIndex]);
-                                if (_whosTalkingIndex < _allNames.length) {
-                                  _controller.restart(duration: _duration);
-                                  _isRunning = true;
-                                } else {
-                                  _controller.reset();
-                                  _controller.pause();
-                                  _isRunning = false;
+                            onTimerComplete: () {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  final currentParticipants = ref.read(participantsProvider);
+                                  if (currentParticipants.currentPersonIndex < currentParticipants.people.length - 1) {
+                                    ref.read(participantsProvider.notifier).nextPerson();
+                                    ref.read(timerProvider.notifier).restartTimer();
+                                  } else {
+                                    // Last person finished - move to end state to show comic
+                                    ref.read(participantsProvider.notifier).setCurrentPersonIndex(currentParticipants.people.length);
+                                    ref.read(timerProvider.notifier).setRunning(false);
+                                  }
                                 }
                               });
                             },
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            _whosTalkingIndex >= 0 &&
-                                    _whosTalkingIndex < _allNames.length
-                                ? _allNames[_whosTalkingIndex]
-                                : "🎆",
-                            style: TextStyle(
-                              fontSize: 40,
-                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Combined Stop/Resume button
-                              ElevatedButton(
-                                onPressed: () {
-                                  setState(() {
-                                    if (_isRunning) {
-                                      _controller.pause();
-                                      _isRunning = false;
-                                    } else {
-                                      _controller.resume();
-                                      _isRunning = true;
-                                    }
-                                  });
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.primary,
-                                  foregroundColor:
-                                      Theme.of(context).colorScheme.onPrimary,
+                        ),
+                        const SizedBox(height: 16),
+                        if (isNarrow && showPeople) ...[
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: PeopleSection(
+                                    people: participantsState.people,
+                                    currentPersonIndex: participantsState.currentPersonIndex,
+                                    showAddPerson: participantsState.showAddPerson,
+                                    hasValidClipboardContent:
+                                        participantsState.hasValidClipboardContent,
+                                    nameController: _nameController,
+                                    onAddPerson: _addPerson,
+                                    onRemovePerson: _removePerson,
+                                    onToggleAddPerson: () {
+                                      ref.read(participantsProvider.notifier).setShowAddPerson(true);
+                                    },
+                                    onCancelAddPerson: () {
+                                      ref.read(participantsProvider.notifier).setShowAddPerson(false);
+                                      _nameController.clear();
+                                    },
+                                    onPasteParticipantList: _pasteParticipantList,
+                                    onClearAllParticipants: _clearAllParticipants,
+                                    onShuffleParticipants: _shuffleParticipants,
+                                    onPersonSelected: (index) {
+                                      final currentIndex = ref.read(participantsProvider).currentPersonIndex;
+                                      if (index != currentIndex) {
+                                        ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                                        ref.read(timerProvider.notifier).restartTimer();
+                                      }
+                                    },
+                                  ),
                                 ),
-                                child: Text(_isRunning ? 'Stop' : 'Resume'),
-                              ),
-                              const SizedBox(width: 20),
-                              // Next person button
-                              ElevatedButton(
-                                onPressed: () {
-                                  setState(() {
-                                    // Move to the next person. keep increasing the index
-                                    // until we find a person that is selected or we reach
-                                    // the end of the list.
-                                    do {
-                                      _whosTalkingIndex++;
-                                    } while (
-                                        _whosTalkingIndex < _allNames.length &&
-                                            !_selectedNames[_whosTalkingIndex]);
-                                    if (_whosTalkingIndex < _allNames.length) {
-                                      _controller.restart(duration: _duration);
-                                      _isRunning = true;
-                                    } else {
-                                      _controller.reset();
-                                      _controller.pause();
-                                      _isRunning = false;
-                                    }
-                                  });
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.primary,
-                                  foregroundColor:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                ),
-                                child: const Text(
-                                  'Next person',
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              // Restart button
-                              ElevatedButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _controller.restart(duration: _duration);
-                                    _controller.pause();
-                                    _isRunning = false;
-                                    // Assing the _whosTalkingIndex to the first person in the list
-                                    // that is selected.
-                                    _whosTalkingIndex =
-                                        _selectedNames.indexOf(true);
-                                  });
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.primary,
-                                  foregroundColor:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                ),
-                                child: const Text('Restart'),
-                              ),
-                            ],
+                                const SizedBox(height: 8),
+                                SessionInfo(people: participantsState.people),
+                              ],
+                            ),
                           ),
+                        ] else
+                          SessionInfo(people: participantsState.people),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (showPeople) ...[
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: PeopleSection(
+                                    people: participantsState.people,
+                                    currentPersonIndex: participantsState.currentPersonIndex,
+                                    showAddPerson: participantsState.showAddPerson,
+                                    hasValidClipboardContent:
+                                        participantsState.hasValidClipboardContent,
+                                    nameController: _nameController,
+                                    onAddPerson: _addPerson,
+                                    onRemovePerson: _removePerson,
+                                    onToggleAddPerson: () {
+                                      ref.read(participantsProvider.notifier).setShowAddPerson(true);
+                                    },
+                                    onCancelAddPerson: () {
+                                      ref.read(participantsProvider.notifier).setShowAddPerson(false);
+                                      _nameController.clear();
+                                    },
+                                    onPasteParticipantList: _pasteParticipantList,
+                                    onClearAllParticipants: _clearAllParticipants,
+                                    onShuffleParticipants: _shuffleParticipants,
+                                    onPersonSelected: (index) {
+                                      print('Main: onPersonSelected called with index $index');
+                                      ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                                      ref.read(timerProvider.notifier).restartTimer();
+                                      print('Main: Person selection completed');
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                SessionInfo(people: participantsState.people),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                        ] else ...[
+                          SizedBox(
+                            width: 320,
+                            child: SessionInfo(people: participantsState.people),
+                          ),
+                          const SizedBox(width: 24),
                         ],
-                      ),
-              ),
-            ),
-          ],
+                        Expanded(
+                          flex: 2,
+                          child: TimerSection(
+                            key: _timerSectionKey,
+                            controller: timerState.controller,
+                            duration: timerState.duration,
+                            isRunning: timerState.isRunning,
+                            currentPersonIndex: participantsState.currentPersonIndex,
+                            people: participantsState.people,
+                            currentTime: timerState.currentTime,
+                            showTeamMembersHeader: !showPeople,
+                            onToggleTimer: _toggleTimer,
+                            onResetTimer: _resetTimer,
+                            onPreviousPerson: _previousPerson,
+                            onNextPerson: _nextPerson,
+                            onPersonSelected: (index) {
+                              ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                              ref.read(timerProvider.notifier).restartTimer();
+                            },
+                            onTimerComplete: () {
+                              final currentParticipants = ref.read(participantsProvider);
+                              if (currentParticipants.currentPersonIndex < currentParticipants.people.length - 1) {
+                                ref.read(participantsProvider.notifier).nextPerson();
+                                ref.read(timerProvider.notifier).restartTimer();
+                              } else {
+                                // Last person finished - move to end state to show comic
+                                ref.read(participantsProvider.notifier).setCurrentPersonIndex(currentParticipants.people.length);
+                                ref.read(timerProvider.notifier).setRunning(false);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+            );
+          },
         ),
       ),
     );

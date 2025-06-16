@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'widgets/timer_controls.dart';
 
 class Comic {
   final String title;
@@ -51,7 +52,20 @@ Future<Comic> fetchComic() async {
 }
 
 class ComicScreen extends StatelessWidget {
-  const ComicScreen({Key? key}) : super(key: key);
+  final bool showTimerControls;
+  final bool isRunning;
+  final bool isDisabled;
+  final VoidCallback? onToggleTimer;
+  final VoidCallback? onResetTimer;
+
+  const ComicScreen({
+    Key? key,
+    this.showTimerControls = false,
+    this.isRunning = false,
+    this.isDisabled = false,
+    this.onToggleTimer,
+    this.onResetTimer,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -64,19 +78,61 @@ class ComicScreen extends StatelessWidget {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (snapshot.hasData) {
           final comic = snapshot.data!;
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                Text(comic.title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Image.network(comic.img),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.all(30),
-                  child: Text(comic.alt),
-                ),
-              ],
-            ),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      comic.title, 
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      width: constraints.maxWidth,
+                      height: constraints.maxHeight - (showTimerControls ? 180 : 120), // Reserve space for controls if needed
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Image.network(
+                        comic.img,
+                        fit: BoxFit.contain,
+                        width: constraints.maxWidth - 32,
+                        height: constraints.maxHeight - (showTimerControls ? 180 : 120),
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return const Center(child: CircularProgressIndicator());
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(child: Text('Failed to load image'));
+                        },
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      comic.alt,
+                      style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  if (showTimerControls) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: TimerControls(
+                        isRunning: isRunning,
+                        isDisabled: isDisabled,
+                        onToggleTimer: onToggleTimer ?? () {},
+                        onResetTimer: onResetTimer ?? () {},
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           );
         } else {
           return const Center(child: Text('No data available'));
