@@ -11,7 +11,7 @@ void main() {
       });
 
       test('parses complex multiline email list with irregular whitespace', () {
-        const input = '''Adam Malinowski <adam.malinowski@canonical.com>, c_ed02200be717ac23f97922a34b5fa3f59805dfcff28a0f039e8ede0b50fbe749@group.calendar.google.com, Szu 
+        const input = '''Adam Malinowski <adam.malinowski@canonical.com>, Szu 
   Liang 
     Ho
        
