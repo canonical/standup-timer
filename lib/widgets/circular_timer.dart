@@ -50,7 +50,7 @@ class _CircularTimerState extends ConsumerState<CircularTimer> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textColor = theme.colorScheme.onSurface;
-    final ringColor = theme.colorScheme.outlineVariant;
+    final ringColor = theme.colorScheme.tertiary;
 
     return LayoutBuilder(
       builder: (context, constraints) {
