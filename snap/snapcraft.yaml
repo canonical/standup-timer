@@ -1,0 +1,42 @@
+name: standup-timer
+adopt-info: standup-timer
+license: GPL-3.0-only
+icon: snap/gui/standup-timer.svg
+title: Stand-Up Timer
+summary: A lightweight app to help run stand-up meetings
+description: |
+  A lightweight Flutter desktop application that helps run efficient stand-up
+  or daily-scrum meetings.
+
+  Each participant gets a fixed countdown (default 2 min) that automatically
+  advances to the next speaker when time is up.
+
+  You can quickly include/exclude speakers and see the total expected meeting
+  time before you start.
+
+source-code: https://github.com/canonical/standup-timer
+issues: https://github.com/canonical/standup-timer/issues
+
+base: core24
+grade: stable
+confinement: strict
+compression: lzo
+
+platforms:
+  amd64:
+
+apps:
+  standup-timer:
+    command: standup_timer
+    extensions: [gnome]
+    plugs:
+      - network
+
+parts:
+  standup-timer:
+    source: .
+    plugin: flutter
+    build-snaps: [yq]
+    override-pull: |
+      craftctl default
+      craftctl set version="$(yq -r .version pubspec.yaml)"
