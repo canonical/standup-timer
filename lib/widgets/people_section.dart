@@ -337,20 +337,20 @@ class _PeopleSectionState extends State<PeopleSection> {
         Color itemText;
         
         if (isSelected) {
-          // Current speaker - use primary colors
-          itemBg = theme.colorScheme.primaryContainer;
-          itemBorder = theme.colorScheme.primary;
-          itemText = theme.colorScheme.onPrimaryContainer;
-        } else if (isFocused) {
-          // Focused/selected but not current speaker - use secondary colors
-          itemBg = theme.colorScheme.secondaryContainer;
-          itemBorder = theme.colorScheme.secondary;
-          itemText = theme.colorScheme.onSecondaryContainer;
-        } else {
-          // Normal state
+          // Current speaker - matches original implementation
           itemBg = theme.colorScheme.surfaceContainerHighest;
-          itemBorder = Colors.transparent;
+          itemBorder = theme.colorScheme.primary;
           itemText = textPrimary;
+        } else if (isFocused) {
+          // Focused but not current speaker - subtle highlight
+          itemBg = theme.colorScheme.primaryContainer.withValues(alpha: 0.8);
+          itemBorder = theme.colorScheme.primary.withValues(alpha: 0.3);
+          itemText = theme.colorScheme.onPrimaryContainer;
+        } else {
+          // Normal state - matches original implementation
+          itemBg = theme.colorScheme.primaryContainer;
+          itemBorder = Colors.transparent;
+          itemText = theme.colorScheme.onPrimaryContainer;
         }
         return Container(
           margin: const EdgeInsets.only(bottom: 4),

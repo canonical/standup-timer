@@ -92,7 +92,7 @@ class _ComicScreenState extends State<ComicScreen> {
   void _showImageModal(BuildContext context, Comic comic) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.85),
+      barrierColor: Colors.black.withValues(alpha: 0.85),
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
@@ -189,11 +189,17 @@ class _ComicScreenState extends State<ComicScreen> {
                   Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          comic.title, 
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 120, 16), // Add right padding for buttons
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                comic.title, 
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       Expanded(
@@ -244,10 +250,10 @@ class _ComicScreenState extends State<ComicScreen> {
                       ],
                     ],
                   ),
-                  // Action buttons in top right corner
+                  // Action buttons aligned with title
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 16, // Match the top padding of the title
+                    right: 16, // Match the horizontal padding
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -260,7 +266,7 @@ class _ComicScreenState extends State<ComicScreen> {
                           ),
                           tooltip: 'Copy comic URL',
                           style: IconButton.styleFrom(
-                            backgroundColor: theme.colorScheme.surface.withOpacity(0.8),
+                            backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.8),
                             padding: const EdgeInsets.all(8),
                           ),
                           onPressed: () {
