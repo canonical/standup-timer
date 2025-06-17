@@ -375,9 +375,9 @@ class _PeopleSectionState extends State<PeopleSection> {
                     }
                   },
                   behavior: HitTestBehavior.opaque,
-                  child: isSelected
+                  child: isFocused
                       ? Tooltip(
-                          message: 'Current speaker • Use ↑↓ to navigate, Shift+↑↓ to reorder, Shift+Backspace to remove',
+                          message: 'Selected participant • Use ↑↓ to navigate, Shift+↑↓ to reorder, Shift+Backspace to remove',
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Text(
