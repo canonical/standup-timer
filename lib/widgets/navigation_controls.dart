@@ -6,6 +6,7 @@ class NavigationControls extends StatelessWidget {
   final VoidCallback onPreviousPerson;
   final VoidCallback onNextPerson;
   final Function(int) onPersonSelected;
+  final VoidCallback? onFinish;
 
   const NavigationControls({
     super.key,
@@ -14,6 +15,7 @@ class NavigationControls extends StatelessWidget {
     required this.onPreviousPerson,
     required this.onNextPerson,
     required this.onPersonSelected,
+    this.onFinish,
   });
 
   @override
@@ -70,39 +72,66 @@ class NavigationControls extends StatelessWidget {
         ),
         Expanded(
           child: Center(
-            child: TextButton(
-              onPressed:
-                  currentPersonIndex < peopleCount - 1 ? onNextPerson : null,
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                    horizontal: isNarrow ? 4 : 8, vertical: isNarrow ? 6 : 8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (!isNarrow) ...[
-                    Text(
-                      'Next',
-                      style: TextStyle(
-                        color: currentPersonIndex < peopleCount - 1
-                            ? buttonGhostText
-                            : disabledColor,
-                        fontSize: 14,
-                      ),
+            child: currentPersonIndex == peopleCount - 1 && onFinish != null
+                ? ElevatedButton(
+                    onPressed: onFinish,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: isNarrow ? 12 : 16, vertical: isNarrow ? 8 : 10),
                     ),
-                    const SizedBox(width: 4),
-                  ],
-                  Icon(
-                    Icons.chevron_right,
-                    size: isNarrow ? 14 : 16,
-                    color: currentPersonIndex < peopleCount - 1
-                        ? buttonGhostText
-                        : disabledColor,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.celebration,
+                          size: isNarrow ? 16 : 18,
+                        ),
+                        if (!isNarrow) ...[
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Finish',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ],
+                    ),
+                  )
+                : TextButton(
+                    onPressed:
+                        currentPersonIndex < peopleCount - 1 ? onNextPerson : null,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: isNarrow ? 4 : 8, vertical: isNarrow ? 6 : 8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (!isNarrow) ...[
+                          Text(
+                            'Next',
+                            style: TextStyle(
+                              color: currentPersonIndex < peopleCount - 1
+                                  ? buttonGhostText
+                                  : disabledColor,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        Icon(
+                          Icons.chevron_right,
+                          size: isNarrow ? 14 : 16,
+                          color: currentPersonIndex < peopleCount - 1
+                              ? buttonGhostText
+                              : disabledColor,
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
           ),
         ),
       ],
