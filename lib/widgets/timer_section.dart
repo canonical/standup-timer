@@ -129,6 +129,7 @@ class _TimerSectionState extends State<TimerSection> {
                           : Column(
                               children: [
                                 Expanded(
+                                  flex: 3,
                                   child: Center(
                                     child: CircularTimer(
                                       key: ValueKey('circular_timer_${widget.currentPersonIndex}${widget.duration}'),
@@ -139,14 +140,14 @@ class _TimerSectionState extends State<TimerSection> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: isNarrow ? 16 : 32),
+                                SizedBox(height: isNarrow ? 12 : 20),
                                 TimerControls(
                                   isRunning: widget.isRunning,
                                   isDisabled: widget.people.isEmpty,
                                   onToggleTimer: widget.onToggleTimer,
                                   onResetTimer: widget.onResetTimer,
                                 ),
-                                const Spacer(),
+                                SizedBox(height: isNarrow ? 16 : 24),
                                 NavigationControls(
                                   currentPersonIndex: widget.currentPersonIndex,
                                   peopleCount: widget.people.length,
@@ -155,6 +156,7 @@ class _TimerSectionState extends State<TimerSection> {
                                   onPersonSelected: widget.onPersonSelected,
                                   onFinish: _onFinish,
                                 ),
+                                SizedBox(height: isNarrow ? 8 : 12),
                               ],
                             ),
                 ),

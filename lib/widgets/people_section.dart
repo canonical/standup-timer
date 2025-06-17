@@ -85,6 +85,21 @@ class _PeopleSectionState extends State<PeopleSection> {
             _focusedIndex = oldIndex + 1;
           });
           return true;
+        } else if (event.logicalKey == LogicalKeyboardKey.backspace && _focusedIndex != null) {
+          final indexToRemove = _focusedIndex!;
+          widget.onRemovePerson(indexToRemove);
+          // Adjust focus after removal
+          setState(() {
+            if (widget.people.length <= 1) {
+              // Will be empty after removal
+              _focusedIndex = null;
+            } else if (indexToRemove >= widget.people.length - 1) {
+              // Removed last item, focus previous
+              _focusedIndex = widget.people.length - 2;
+            }
+            // Otherwise keep the same index (next item will move into this position)
+          });
+          return true;
         }
       } else {
         if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -186,7 +201,7 @@ class _PeopleSectionState extends State<PeopleSection> {
                 const SizedBox(width: 8),
                 Flexible(
                   child: Tooltip(
-                    message: 'Click to focus, then use ↑↓ arrows to navigate and Shift+↑↓ to reorder',
+                    message: 'Click to focus, then use ↑↓ arrows to navigate, Shift+↑↓ to reorder, Shift+Backspace to remove',
                     child: Text(
                       'Team Members',
                       style: TextStyle(
@@ -322,17 +337,20 @@ class _PeopleSectionState extends State<PeopleSection> {
         Color itemText;
         
         if (isSelected) {
-          itemBg = theme.colorScheme.surfaceContainerHighest;
+          // Current speaker - use primary colors
+          itemBg = theme.colorScheme.primaryContainer;
           itemBorder = theme.colorScheme.primary;
-          itemText = textPrimary;
+          itemText = theme.colorScheme.onPrimaryContainer;
         } else if (isFocused) {
+          // Focused/selected but not current speaker - use secondary colors
           itemBg = theme.colorScheme.secondaryContainer;
           itemBorder = theme.colorScheme.secondary;
           itemText = theme.colorScheme.onSecondaryContainer;
         } else {
-          itemBg = theme.colorScheme.primaryContainer;
+          // Normal state
+          itemBg = theme.colorScheme.surfaceContainerHighest;
           itemBorder = Colors.transparent;
-          itemText = theme.colorScheme.onPrimaryContainer;
+          itemText = textPrimary;
         }
         return Container(
           margin: const EdgeInsets.only(bottom: 4),
