@@ -375,16 +375,30 @@ class _PeopleSectionState extends State<PeopleSection> {
                     }
                   },
                   behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      widget.people[index],
-                      style: TextStyle(
-                        color: itemText,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+                  child: isSelected
+                      ? Tooltip(
+                          message: 'Current speaker • Use ↑↓ to navigate, Shift+↑↓ to reorder, Shift+Backspace to remove',
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Text(
+                              widget.people[index],
+                              style: TextStyle(
+                                color: itemText,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            widget.people[index],
+                            style: TextStyle(
+                              color: itemText,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                 ),
               ),
               IconButton(

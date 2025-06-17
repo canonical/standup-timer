@@ -188,18 +188,13 @@ class _ComicScreenState extends State<ComicScreen> {
                 children: [
                   Column(
                     children: [
+                      // Title on its own row with normal padding
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 120, 16), // Add right padding for buttons
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                comic.title, 
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          comic.title, 
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                       Expanded(
