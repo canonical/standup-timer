@@ -1,46 +1,49 @@
-# Stand-Up Timer App
+# Stand-Up Timer
 
-A lightweight Flutter desktop application that helps run efficient stand-up or daily-scrum meetings.  
-Each participant gets a fixed countdown (default 2 min) that automatically advances to the next speaker when time is up.  
-You can quickly include/exclude speakers and see the total expected meeting time before you start.
+[![Snap][snap-badge]][snap-link]
 
----
+**Stand-Up Timer** is a lightweight desktop application that helps run efficient
+stand-up or daily-scrum meetings.
 
-## ✨ Features
+## Basic Usage
 
-| Feature | Description |
-|---------|-------------|
-| **Name picker** | Toggle who should speak today with a single click. |
-| **Auto-shuffle** | Names are shuffled on every app launch for variety. |
-| **Circular countdown** | Large, animated timer ring with MM:SS display. |
-| **One-click controls** | Start, Stop/Resume, Next person, and full Restart. |
-| **Expected duration** | Shows total meeting length based on selected speakers. |
-
----
-
-## 🚀 Getting Started
-
-
-  ```bash
-  git clone git@github.com:canonical/standup-timer.git
-  cd standup-timer/
-  flutter config --enable-linux-desktop
-  flutter run -d linux
-  ```
-
-  Tip: Replace the default _allNames list in main.dart with your actual team names.
-
-
-## 🖥️ Usage
-
-- Select speakers – Click a name to include/exclude it (blue = selected).
-- Check “Expected time” – Shows total minutes based on your selection.
-- Start – The first speaker’s timer begins.
+- Add team members – Add team members one-by-one or from your clipboard.
+- Select speakers – Click a name to include/exclude it.
+- Check "Expected time" – Shows total minutes based on your selection.
+- Start – The first speaker's timer begins.
 - Stop/Resume – Pause if needed.
 - Next person – Skip ahead manually.
 - Restart – Reset the whole session without closing the app.
 
+![Screenshot](./screenshot.png)
 
-## 🔧 Customisation
-- Timer length – Change _duration (seconds) in _TimerPageState.
-- Default names – Edit the _allNames list at the top of main.dart.
+## Installation
+
+Stand-Up Timer is available on all major Linux distributions.
+
+On snap-ready systems, you can install it on the command-line with:
+
+```shell
+sudo snap install standup-timer
+```
+
+## Community and Support
+
+You can report any issues, bugs, or feature requests on the project's
+[GitHub repository][github-issues].
+
+## Contribute to Stand-Up Timer
+
+Stand-Up Timer is open source. Contributions are welcome.
+
+If you're interested, start with the [contributing guide](./CONTRIBUTING.md).
+
+## License and Copyright
+
+Stand-Up Timer is released under the [GPL-3.0 license](./LICENSE).
+
+© 2025 Canonical Ltd.
+
+[snap-badge]: https://snapcraft.io/standup-timer/badge.svg
+[snap-link]: https://snapcraft.io/standup-timer
+[github-issues]: https://github.com/canonical/standup-timer/issues
