@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'widgets/timer_controls.dart';
 
@@ -8,14 +9,16 @@ class Comic {
   final String title;
   final String img;
   final String alt;
+  final int num;
 
-  Comic({required this.title, required this.img, required this.alt});
+  Comic({required this.title, required this.img, required this.alt, required this.num});
 
   factory Comic.fromJson(Map<String, dynamic> json) {
     return Comic(
       title: json['title'],
       img: json['img'],
       alt: json['alt'],
+      num: json['num'],
     );
   }
 }
@@ -51,7 +54,7 @@ Future<Comic> fetchComic() async {
   }
 }
 
-class ComicScreen extends StatelessWidget {
+class ComicScreen extends StatefulWidget {
   final bool showTimerControls;
   final bool isRunning;
   final bool isDisabled;
@@ -68,9 +71,110 @@ class ComicScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<ComicScreen> createState() => _ComicScreenState();
+}
+
+class _ComicScreenState extends State<ComicScreen> {
+  Future<Comic>? _comicFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _comicFuture = fetchComic();
+  }
+
+  void _refreshComic() {
+    setState(() {
+      _comicFuture = fetchComic();
+    });
+  }
+
+  void _showImageModal(BuildContext context, Comic comic) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.85),
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(10),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Close on background tap
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(color: Colors.transparent),
+              ),
+              // Image and caption container
+              Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.95,
+                  maxHeight: MediaQuery.of(context).size.height * 0.95,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Image with zoom capability
+                    Expanded(
+                      child: InteractiveViewer(
+                        minScale: 0.5,
+                        maxScale: 4.0,
+                        child: Image.network(
+                          comic.img,
+                          fit: BoxFit.contain,
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) return child;
+                            return const Center(child: CircularProgressIndicator());
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(child: Text('Failed to load image', style: TextStyle(color: Colors.white)));
+                          },
+                        ),
+                      ),
+                    ),
+                    // Caption
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      color: Colors.black87,
+                      child: Text(
+                        comic.alt,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Close button
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black54,
+                    shape: const CircleBorder(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return FutureBuilder<Comic>(
-      future: fetchComic(),
+      future: _comicFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -80,56 +184,114 @@ class ComicScreen extends StatelessWidget {
           final comic = snapshot.data!;
           return LayoutBuilder(
             builder: (context, constraints) {
-              return Column(
+              return Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      comic.title, 
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      width: constraints.maxWidth,
-                      height: constraints.maxHeight - (showTimerControls ? 180 : 120), // Reserve space for controls if needed
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Image.network(
-                        comic.img,
-                        fit: BoxFit.contain,
-                        width: constraints.maxWidth - 32,
-                        height: constraints.maxHeight - (showTimerControls ? 180 : 120),
-                        loadingBuilder: (context, child, progress) {
-                          if (progress == null) return child;
-                          return const Center(child: CircularProgressIndicator());
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(child: Text('Failed to load image'));
-                        },
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          comic.title, 
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      comic.alt,
-                      style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  if (showTimerControls) ...[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      child: TimerControls(
-                        isRunning: isRunning,
-                        isDisabled: isDisabled,
-                        onToggleTimer: onToggleTimer ?? () {},
-                        onResetTimer: onResetTimer ?? () {},
+                      Expanded(
+                        child: Container(
+                          width: constraints.maxWidth,
+                          height: constraints.maxHeight - (widget.showTimerControls ? 180 : 120), // Reserve space for controls if needed
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: GestureDetector(
+                            onTap: () => _showImageModal(context, comic),
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: Image.network(
+                                comic.img,
+                                fit: BoxFit.contain,
+                                width: constraints.maxWidth - 32,
+                                height: constraints.maxHeight - (widget.showTimerControls ? 180 : 120),
+                                loadingBuilder: (context, child, progress) {
+                                  if (progress == null) return child;
+                                  return const Center(child: CircularProgressIndicator());
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Center(child: Text('Failed to load image'));
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          comic.alt,
+                          style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      if (widget.showTimerControls) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: TimerControls(
+                            isRunning: widget.isRunning,
+                            isDisabled: widget.isDisabled,
+                            onToggleTimer: widget.onToggleTimer ?? () {},
+                            onResetTimer: widget.onResetTimer ?? () {},
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  // Action buttons in top right corner
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Copy URL button
+                        IconButton(
+                          icon: Icon(
+                            Icons.link,
+                            color: theme.colorScheme.onSurfaceVariant,
+                            size: 20,
+                          ),
+                          tooltip: 'Copy comic URL',
+                          style: IconButton.styleFrom(
+                            backgroundColor: theme.colorScheme.surface.withOpacity(0.8),
+                            padding: const EdgeInsets.all(8),
+                          ),
+                          onPressed: () {
+                            final url = 'https://xkcd.com/${comic.num}/';
+                            Clipboard.setData(ClipboardData(text: url));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Comic URL copied to clipboard'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 4),
+                        // Refresh button
+                        IconButton(
+                          icon: Icon(
+                            Icons.refresh,
+                            color: theme.colorScheme.onSurfaceVariant,
+                            size: 20,
+                          ),
+                          tooltip: 'Refresh comic',
+                          style: IconButton.styleFrom(
+                            backgroundColor: theme.colorScheme.surface.withOpacity(0.8),
+                            padding: const EdgeInsets.all(8),
+                          ),
+                          onPressed: _refreshComic,
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ],
               );
             },
