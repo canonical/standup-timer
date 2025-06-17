@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 class CelebrationScreen extends StatelessWidget {
-  final List<String> people;
   final VoidCallback onResetTimer;
 
   const CelebrationScreen({
     super.key,
-    required this.people,
     required this.onResetTimer,
   });
 
@@ -40,42 +38,6 @@ class CelebrationScreen extends StatelessWidget {
             color: theme.colorScheme.onSurface,
           ),
           textAlign: TextAlign.center,
-        ),
-        SizedBox(height: isNarrow ? 16 : 24),
-        Container(
-          padding: EdgeInsets.all(isNarrow ? 12 : 16),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            children: [
-              Text(
-                'Participants (${people.length})',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: people.map((name) => Chip(
-                  label: Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: isNarrow ? 12 : 14,
-                    ),
-                  ),
-                  backgroundColor: theme.colorScheme.primaryContainer,
-                  labelStyle: TextStyle(
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                )).toList(),
-              ),
-            ],
-          ),
         ),
         SizedBox(height: isNarrow ? 24 : 32),
         ElevatedButton.icon(

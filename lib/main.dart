@@ -277,6 +277,12 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                         ref.read(timerProvider.notifier).restartTimer();
                                       }
                                     },
+                                    onMovePersonUp: (index) {
+                                      ref.read(participantsProvider.notifier).movePersonUp(index);
+                                    },
+                                    onMovePersonDown: (index) {
+                                      ref.read(participantsProvider.notifier).movePersonDown(index);
+                                    },
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -321,6 +327,12 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                       ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
                                       ref.read(timerProvider.notifier).restartTimer();
                                       print('Main: Person selection completed');
+                                    },
+                                    onMovePersonUp: (index) {
+                                      ref.read(participantsProvider.notifier).movePersonUp(index);
+                                    },
+                                    onMovePersonDown: (index) {
+                                      ref.read(participantsProvider.notifier).movePersonDown(index);
                                     },
                                   ),
                                 ),

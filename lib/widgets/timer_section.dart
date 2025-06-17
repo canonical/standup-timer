@@ -116,7 +116,6 @@ class _TimerSectionState extends State<TimerSection> {
                   padding: EdgeInsets.all(isNarrow ? 16.0 : 32.0),
                   child: _showCelebration
                       ? CelebrationScreen(
-                          people: widget.people,
                           onResetTimer: _onResetFromCelebration,
                         )
                       : showComic

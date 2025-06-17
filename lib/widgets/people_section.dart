@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'add_person_widget.dart';
 
 class PeopleSection extends StatefulWidget {
@@ -15,6 +16,8 @@ class PeopleSection extends StatefulWidget {
   final VoidCallback onClearAllParticipants;
   final VoidCallback onShuffleParticipants;
   final Function(int)? onPersonSelected;
+  final Function(int)? onMovePersonUp;
+  final Function(int)? onMovePersonDown;
 
   const PeopleSection({
     super.key,
@@ -31,6 +34,8 @@ class PeopleSection extends StatefulWidget {
     required this.onClearAllParticipants,
     required this.onShuffleParticipants,
     this.onPersonSelected,
+    this.onMovePersonUp,
+    this.onMovePersonDown,
   });
 
   @override
@@ -38,6 +43,76 @@ class PeopleSection extends StatefulWidget {
 }
 
 class _PeopleSectionState extends State<PeopleSection> {
+  int? _focusedIndex;
+  final FocusNode _listFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _listFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(PeopleSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Adjust focused index if the list length changed
+    if (_focusedIndex != null && _focusedIndex! >= widget.people.length) {
+      setState(() {
+        _focusedIndex = widget.people.isEmpty ? null : widget.people.length - 1;
+      });
+    }
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent && widget.people.isNotEmpty) {
+      final isShiftPressed = HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.shiftLeft) ||
+                           HardwareKeyboard.instance.logicalKeysPressed.contains(LogicalKeyboardKey.shiftRight);
+      
+      if (isShiftPressed) {
+        if (event.logicalKey == LogicalKeyboardKey.arrowUp && _focusedIndex != null && _focusedIndex! > 0) {
+          final oldIndex = _focusedIndex!;
+          widget.onMovePersonUp?.call(oldIndex);
+          // Move focus with the item
+          setState(() {
+            _focusedIndex = oldIndex - 1;
+          });
+          return true;
+        } else if (event.logicalKey == LogicalKeyboardKey.arrowDown && _focusedIndex != null && _focusedIndex! < widget.people.length - 1) {
+          final oldIndex = _focusedIndex!;
+          widget.onMovePersonDown?.call(oldIndex);
+          // Move focus with the item
+          setState(() {
+            _focusedIndex = oldIndex + 1;
+          });
+          return true;
+        }
+      } else {
+        if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+          setState(() {
+            if (_focusedIndex == null) {
+              _focusedIndex = widget.people.length - 1;
+            } else if (_focusedIndex! > 0) {
+              _focusedIndex = _focusedIndex! - 1;
+            }
+          });
+          return true;
+        } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+          setState(() {
+            if (_focusedIndex == null) {
+              _focusedIndex = 0;
+            } else if (_focusedIndex! < widget.people.length - 1) {
+              _focusedIndex = _focusedIndex! + 1;
+            }
+          });
+          return true;
+        } else if (event.logicalKey == LogicalKeyboardKey.enter && _focusedIndex != null) {
+          widget.onPersonSelected?.call(_focusedIndex!);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,37 +122,44 @@ class _PeopleSectionState extends State<PeopleSection> {
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = theme.colorScheme.onSurfaceVariant;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context, textPrimary, textSecondary, borderColor),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  if (widget.showAddPerson)
-                    AddPersonWidget(
-                      nameController: widget.nameController,
-                      onAddPerson: widget.onAddPerson,
-                      onCancel: widget.onCancelAddPerson,
-                    ),
-                  Expanded(
-                    child: widget.people.isEmpty
-                        ? _buildEmptyState(context)
-                        : _buildPeopleList(context, textPrimary, textSecondary),
-                  ),
-                ],
-              ),
-            ),
+    return Focus(
+      focusNode: _listFocusNode,
+      onKeyEvent: (node, event) => _handleKeyEvent(event) ? KeyEventResult.handled : KeyEventResult.ignored,
+      child: GestureDetector(
+        onTap: () => _listFocusNode.requestFocus(),
+        child: Container(
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: borderColor),
           ),
-        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context, textPrimary, textSecondary, borderColor),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      if (widget.showAddPerson)
+                        AddPersonWidget(
+                          nameController: widget.nameController,
+                          onAddPerson: widget.onAddPerson,
+                          onCancel: widget.onCancelAddPerson,
+                        ),
+                      Expanded(
+                        child: widget.people.isEmpty
+                            ? _buildEmptyState(context)
+                            : _buildPeopleList(context, textPrimary, textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -103,14 +185,17 @@ class _PeopleSectionState extends State<PeopleSection> {
                 ),
                 const SizedBox(width: 8),
                 Flexible(
-                  child: Text(
-                    'Team Members',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: textPrimary,
+                  child: Tooltip(
+                    message: 'Click to focus, then use ↑↓ arrows to navigate and Shift+↑↓ to reorder',
+                    child: Text(
+                      'Team Members',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -230,15 +315,25 @@ class _PeopleSectionState extends State<PeopleSection> {
       itemCount: widget.people.length,
       itemBuilder: (context, index) {
         final isSelected = index == widget.currentPersonIndex;
-        final itemBg = isSelected
-            ? theme.colorScheme.surfaceContainerHighest
-            : theme.colorScheme.primaryContainer;
-        final itemBorder = isSelected
-            ? theme.colorScheme.primary
-            : Colors.transparent;
-        final itemText = isSelected
-            ? textPrimary
-            : theme.colorScheme.onPrimaryContainer;
+        final isFocused = index == _focusedIndex;
+        
+        Color itemBg;
+        Color itemBorder;
+        Color itemText;
+        
+        if (isSelected) {
+          itemBg = theme.colorScheme.surfaceContainerHighest;
+          itemBorder = theme.colorScheme.primary;
+          itemText = textPrimary;
+        } else if (isFocused) {
+          itemBg = theme.colorScheme.secondaryContainer;
+          itemBorder = theme.colorScheme.secondary;
+          itemText = theme.colorScheme.onSecondaryContainer;
+        } else {
+          itemBg = theme.colorScheme.primaryContainer;
+          itemBorder = Colors.transparent;
+          itemText = theme.colorScheme.onPrimaryContainer;
+        }
         return Container(
           margin: const EdgeInsets.only(bottom: 4),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -251,7 +346,16 @@ class _PeopleSectionState extends State<PeopleSection> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: widget.onPersonSelected != null ? () => widget.onPersonSelected!(index) : null,
+                  onTap: () {
+                    setState(() {
+                      _focusedIndex = index;
+                    });
+                    _listFocusNode.requestFocus();
+                    // Only select if it's not already the current speaker
+                    if (widget.onPersonSelected != null && index != widget.currentPersonIndex) {
+                      widget.onPersonSelected!(index);
+                    }
+                  },
                   behavior: HitTestBehavior.opaque,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
