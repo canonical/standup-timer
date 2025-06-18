@@ -44,7 +44,7 @@ dependencies:
   clipboard: ^0.1.3
   shared_preferences: ^2.2.2
   flutter_riverpod: ^2.5.1
-  confetti: ^0.7.0
+  confetti: ^0.8.0
 
 dev_dependencies:
   flutter_test:
