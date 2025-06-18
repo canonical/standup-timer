@@ -54,11 +54,13 @@ class _CircularTimerState extends ConsumerState<CircularTimer> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate size based on available space with minimum of 100px, maximum of 400px
-        final availableSize = constraints.smallest.shortestSide;
-        final calculatedSize = availableSize * 0.8;
-        final timerSize = calculatedSize < 100.0 ? 100.0 : calculatedSize > 400.0 ? 400.0 : calculatedSize;
-        final fontSize = (timerSize / 5).clamp(20.0, 48.0);
+        // Calculate size based on available space with better flexibility
+        final maxWidth = constraints.maxWidth;
+        final maxHeight = constraints.maxHeight;
+        final availableSize = maxWidth < maxHeight ? maxWidth : maxHeight;
+        final calculatedSize = availableSize * 0.75; // Use 75% of available space
+        final timerSize = calculatedSize.clamp(80.0, 350.0); // Wider range, smaller minimum
+        final fontSize = (timerSize / 6).clamp(16.0, 42.0); // Better font scaling
         
         return SizedBox(
           width: timerSize,
