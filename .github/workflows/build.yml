@@ -11,6 +11,23 @@ on:
     - cron: "0 0 * * 0"
 
 jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install flutter
+        run: sudo snap install --classic flutter
+      - name: Build
+        run: flutter build linux --release
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: standup-timer_linux-x64
+          path: build/linux/x64/release/bundle/*
   snap:
     name: Snap
     runs-on: ubuntu-latest
