@@ -81,7 +81,8 @@ class ComicScreen extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Center(
               child: Text(
-            'An error occurred while trying to connect to the server.\nPlease check your connection or try again later.',
+            'An error occurred while trying to connect to the server.'
+            '\nPlease check your connection or try again later.',
             textAlign: TextAlign.center,
           ));
         } else if (snapshot.hasData) {
