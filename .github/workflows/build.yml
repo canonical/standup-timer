@@ -50,7 +50,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: standup-timer_amd64.snap
+          name: standup-timer_snap-amd64
           path: ${{ steps.snapcraft.outputs.snap }}
       - name: Publish
         if: github.ref == 'refs/heads/main'
