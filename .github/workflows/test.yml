@@ -20,6 +20,8 @@ jobs:
         run: sudo snap install --classic flutter
       - name: Install dependencies
         run: flutter pub get
+      - name: Analyze dependencies
+        run: flutter pub outdated
       - name: Analyze
         run: flutter analyze
       - name: Test
