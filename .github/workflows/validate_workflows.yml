@@ -5,17 +5,33 @@ on:
   push:
     branches: [main]
     paths:
+      - .github/actionlint-matcher.json
       - .github/zizmor.yml
       - .github/workflows/**
       - .github/actions/**
   pull_request:
     paths:
+      - .github/actionlint-matcher.json
       - .github/zizmor.yml
       - .github/workflows/**
       - .github/actions/**
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up uv
+        uses: astral-sh/setup-uv@a02a550bdd3185dba2ebb6aa98d77047ce54ad21 # v6.2.1
+      - name: Run actionlint
+        run: |
+          echo "::add-matcher::.github/actionlint-matcher.json"
+          uvx --from=actionlint-py actionlint -color
   security:
     name: Security
     runs-on: ubuntu-latest
