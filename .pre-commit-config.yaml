@@ -1,4 +1,8 @@
 repos:
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.9.0
+    hooks:
+      - id: zizmor
   - repo: local
     hooks:
       - id: flutter-analyze
