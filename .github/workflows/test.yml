@@ -19,7 +19,7 @@ jobs:
       - name: Install flutter
         run: sudo snap install --classic flutter
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
       - name: Analyze dependencies
         run: flutter pub outdated
       - name: Analyze
