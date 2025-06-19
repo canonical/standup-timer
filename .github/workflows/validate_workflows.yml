@@ -1,0 +1,32 @@
+name: Validate Workflows
+permissions:
+  contents: read
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/zizmor.yml
+      - .github/workflows/**
+      - .github/actions/**
+  pull_request:
+    paths:
+      - .github/zizmor.yml
+      - .github/workflows/**
+      - .github/actions/**
+  workflow_dispatch:
+
+jobs:
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up uv
+        uses: astral-sh/setup-uv@a02a550bdd3185dba2ebb6aa98d77047ce54ad21 # v6.2.1
+      - name: Run zizmor
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: uvx zizmor --pedantic --format=github .
