@@ -18,11 +18,14 @@ Future<void> main() async {
   setWindowTitle('Daily Standup Timer');
   await DesktopWindow.setWindowSize(const Size(1200, 800));
 
-  EasyLocalization(
-    supportedLocales: [Locale('en', 'US'), Locale('pt', 'PT')],
-    path: 'assets/translations',
-    fallbackLocale: Locale('en', 'US'),
-    child: ProviderScope(child: MyApp()),
+  runApp(
+    EasyLocalization(
+      supportedLocales: [Locale('en', 'US'), Locale('pt', 'PT')],
+      path: 'assets/translations',
+      fallbackLocale: Locale('en', 'US'),
+      startLocale: Locale('pt', 'PT'),
+      child: ProviderScope(child: MyApp()),
+    ),
   );
 }
 
@@ -96,12 +99,16 @@ class _TimerPageState extends ConsumerState<TimerPage>
       if (mounted) {
         String message;
         if (addedCount > 0) {
-          message =
-              'Added $addedCount new ${addedCount == 1 ? 'participant' : 'participants'}';
-          // Reset timer when new participants are added
+          message = 'added_participants_timer_page'.tr(namedArgs: {
+            'count': addedCount.toString(),
+            'entity': addedCount == 1
+                ? 'participant_timer_page'.tr()
+                : 'participants_timer_page'.tr()
+          });
+
           ref.read(timerProvider.notifier).resetTimer();
         } else {
-          message = 'No new participants added (duplicates were skipped)';
+          message = 'no_new_participants_timer_page'.tr();
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -114,8 +121,8 @@ class _TimerPageState extends ConsumerState<TimerPage>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to paste from clipboard'),
+          SnackBar(
+            content: Text('failed_paste_timer_page'.tr()),
             duration: Duration(seconds: 2),
           ),
         );

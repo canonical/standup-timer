@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class TimerControls extends StatelessWidget {
@@ -30,7 +31,8 @@ class TimerControls extends StatelessWidget {
               onPressed: onResetTimer,
               style: ElevatedButton.styleFrom(
                 backgroundColor: buttonSecondaryBg,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -45,7 +47,7 @@ class TimerControls extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Reset',
+                    'reset_timer_controls'.tr(),
                     style: TextStyle(
                       color: buttonSecondaryText,
                       fontWeight: FontWeight.w500,
@@ -63,7 +65,8 @@ class TimerControls extends StatelessWidget {
           child: ElevatedButton(
             onPressed: isDisabled ? null : onToggleTimer,
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDisabled ? theme.disabledColor : theme.colorScheme.primary,
+              backgroundColor:
+                  isDisabled ? theme.disabledColor : theme.colorScheme.primary,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -74,14 +77,20 @@ class TimerControls extends StatelessWidget {
               children: [
                 Icon(
                   isRunning ? Icons.pause : Icons.play_arrow,
-                  color: isDisabled ? theme.colorScheme.onSurface.withOpacity(0.38) : theme.colorScheme.onPrimary,
+                  color: isDisabled
+                      ? theme.colorScheme.onSurface.withOpacity(0.38)
+                      : theme.colorScheme.onPrimary,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  isRunning ? 'Pause' : 'Start Timer',
+                  isRunning
+                      ? 'pause_timer_controls'.tr()
+                      : 'start_timer_timer_controls'.tr(),
                   style: TextStyle(
-                    color: isDisabled ? theme.colorScheme.onSurface.withOpacity(0.38) : theme.colorScheme.onPrimary,
+                    color: isDisabled
+                        ? theme.colorScheme.onSurface.withOpacity(0.38)
+                        : theme.colorScheme.onPrimary,
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),

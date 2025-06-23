@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'widgets/timer_controls.dart';
@@ -22,7 +23,9 @@ class Comic {
 
 Future<Comic> fetchComic() async {
   final weekday = DateTime.now().weekday; // Monday=1, Tuesday=2, etc.
-  if (weekday == DateTime.monday || weekday == DateTime.wednesday || weekday == DateTime.friday) {
+  if (weekday == DateTime.monday ||
+      weekday == DateTime.wednesday ||
+      weekday == DateTime.friday) {
     // Fetch the latest XKCD comic on Monday, Wednesday, or Friday.
     final response = await http.get(Uri.parse("https://xkcd.com/info.0.json"));
     if (response.statusCode == 200) {
@@ -33,13 +36,15 @@ Future<Comic> fetchComic() async {
   } else {
     // Otherwise, fetch a random safe-for-work XKCD comic.
     // First, get the latest comic to know the maximum comic number.
-    final latestResponse = await http.get(Uri.parse("https://xkcd.com/info.0.json"));
+    final latestResponse =
+        await http.get(Uri.parse("https://xkcd.com/info.0.json"));
     if (latestResponse.statusCode == 200) {
       final latestJson = json.decode(latestResponse.body);
       final maxNum = latestJson['num'];
       // Generate a random comic number between 1 and maxNum.
       final randomComicNum = Random().nextInt(maxNum) + 1;
-      final randomResponse = await http.get(Uri.parse("https://xkcd.com/$randomComicNum/info.0.json"));
+      final randomResponse = await http
+          .get(Uri.parse("https://xkcd.com/$randomComicNum/info.0.json"));
       if (randomResponse.statusCode == 200) {
         return Comic.fromJson(json.decode(randomResponse.body));
       } else {
@@ -75,7 +80,11 @@ class ComicScreen extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+          return Center(
+              child: Text(
+            'error_prefix_comic_screen'
+                .tr(namedArgs: {'error': '${snapshot.error}'}),
+          ));
         } else if (snapshot.hasData) {
           final comic = snapshot.data!;
           return LayoutBuilder(
@@ -85,27 +94,35 @@ class ComicScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      comic.title, 
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      comic.title,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
                     child: Container(
                       width: constraints.maxWidth,
-                      height: constraints.maxHeight - (showTimerControls ? 180 : 120), // Reserve space for controls if needed
+                      height: constraints.maxHeight -
+                          (showTimerControls
+                              ? 180
+                              : 120), // Reserve space for controls if needed
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Image.network(
                         comic.img,
                         fit: BoxFit.contain,
                         width: constraints.maxWidth - 32,
-                        height: constraints.maxHeight - (showTimerControls ? 180 : 120),
+                        height: constraints.maxHeight -
+                            (showTimerControls ? 180 : 120),
                         loadingBuilder: (context, child, progress) {
                           if (progress == null) return child;
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         },
                         errorBuilder: (context, error, stackTrace) {
-                          return const Center(child: Text('Failed to load image'));
+                          return Center(
+                              child: Text(
+                                  'failed_to_load_image_comic_screen'.tr()));
                         },
                       ),
                     ),
@@ -115,7 +132,8 @@ class ComicScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Text(
                       comic.alt,
-                      style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                      style: const TextStyle(
+                          fontSize: 14, fontStyle: FontStyle.italic),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -135,7 +153,9 @@ class ComicScreen extends StatelessWidget {
             },
           );
         } else {
-          return const Center(child: Text('No data available'));
+          return Center(
+            child: Text('no_data_available_comic_screen').tr(),
+          );
         }
       },
     );
