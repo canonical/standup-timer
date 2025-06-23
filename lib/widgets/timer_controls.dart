@@ -78,7 +78,7 @@ class TimerControls extends StatelessWidget {
                 Icon(
                   isRunning ? Icons.pause : Icons.play_arrow,
                   color: isDisabled
-                      ? theme.colorScheme.onSurface.withOpacity(0.38)
+                      ? theme.colorScheme.onSurface.withValues(alpha: 0.38)
                       : theme.colorScheme.onPrimary,
                   size: 20,
                 ),
@@ -89,7 +89,7 @@ class TimerControls extends StatelessWidget {
                       : 'start_timer_timer_controls'.tr(),
                   style: TextStyle(
                     color: isDisabled
-                        ? theme.colorScheme.onSurface.withOpacity(0.38)
+                        ? theme.colorScheme.onSurface.withValues(alpha: 0.38)
                         : theme.colorScheme.onPrimary,
                     fontWeight: FontWeight.w500,
                     fontSize: 16,

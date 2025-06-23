@@ -10,6 +10,7 @@ import 'widgets/people_section.dart';
 import 'widgets/session_info.dart';
 import 'providers/timer_provider.dart';
 import 'providers/participants_provider.dart';
+import 'dart:developer' as developer;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -379,15 +380,18 @@ class _TimerPageState extends ConsumerState<TimerPage>
                                         _clearAllParticipants,
                                     onShuffleParticipants: _shuffleParticipants,
                                     onPersonSelected: (index) {
-                                      print(
-                                          'Main: onPersonSelected called with index $index');
+                                      developer.log(
+                                          'onPersonSelected called with index $index',
+                                          name: 'Main');
                                       ref
                                           .read(participantsProvider.notifier)
                                           .setCurrentPersonIndex(index);
                                       ref
                                           .read(timerProvider.notifier)
                                           .restartTimer();
-                                      print('Main: Person selection completed');
+                                      developer.log(
+                                          'Person selection completed',
+                                          name: 'Main');
                                     },
                                   ),
                                 ),
