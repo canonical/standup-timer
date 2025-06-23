@@ -28,7 +28,7 @@
   "reset_timer_controls": "Reiniciar",
   "start_timer_timer_controls": "Iniciar Temporizador",
   "pause_timer_controls": "Pausar",
-  "error_prefix_comic_screen": "Erro: {error}",
+  "error_prefix_comic_screen": "Ocorreu um erro ao tentar ligar ao servidor. \nVerifique a sua ligação ou tente novamente mais tarde.",
   "failed_to_load_image_comic_screen": "Falha ao carregar imagem",
   "no_data_available_comic_screen": "Sem dados disponíveis",
   "added_participants_timer_page": "Adicionado(s) {count} novo(s) {entity}",

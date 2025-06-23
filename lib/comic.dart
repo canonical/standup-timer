@@ -82,8 +82,8 @@ class ComicScreen extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Center(
               child: Text(
-            'error_prefix_comic_screen'
-                .tr(namedArgs: {'error': '${snapshot.error}'}),
+            'error_prefix_comic_screen'.tr(),
+            textAlign: TextAlign.center,
           ));
         } else if (snapshot.hasData) {
           final comic = snapshot.data!;

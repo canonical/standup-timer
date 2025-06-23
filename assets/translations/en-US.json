@@ -28,7 +28,7 @@
   "reset_timer_controls": "Reset",
   "start_timer_timer_controls": "Start Timer",
   "pause_timer_controls": "Pause",
-  "error_prefix_comic_screen": "Error: {error}",
+  "error_prefix_comic_screen": "An error occurred while trying to connect to the server.\nPlease check your connection or try again later.",
   "failed_to_load_image_comic_screen": "Failed to load image",
   "no_data_available_comic_screen": "No data available",
   "added_participants_timer_page": "Added {count} new {entity}",
