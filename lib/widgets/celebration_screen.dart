@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class CelebrationScreen extends StatelessWidget {
@@ -26,7 +27,7 @@ class CelebrationScreen extends StatelessWidget {
         ),
         SizedBox(height: isNarrow ? 16 : 24),
         Text(
-          'Standup Complete!',
+          'standup_complete_celebration_screen'.tr(),
           style: theme.textTheme.headlineMedium?.copyWith(
             color: theme.colorScheme.primary,
             fontWeight: FontWeight.bold,
@@ -35,7 +36,7 @@ class CelebrationScreen extends StatelessWidget {
         ),
         SizedBox(height: isNarrow ? 8 : 12),
         Text(
-          'Great job everyone! 🎉',
+          'great_job_celebration_screen'.tr(),
           style: theme.textTheme.titleMedium?.copyWith(
             color: theme.colorScheme.onSurface,
           ),
@@ -51,7 +52,9 @@ class CelebrationScreen extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'Participants (${people.length})',
+                'participants_celebration_screen'.tr(namedArgs: {
+                  'count': people.length.toString(),
+                }),
                 style: theme.textTheme.titleSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
@@ -61,18 +64,20 @@ class CelebrationScreen extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 4,
-                children: people.map((name) => Chip(
-                  label: Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: isNarrow ? 12 : 14,
-                    ),
-                  ),
-                  backgroundColor: theme.colorScheme.primaryContainer,
-                  labelStyle: TextStyle(
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                )).toList(),
+                children: people
+                    .map((name) => Chip(
+                          label: Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: isNarrow ? 12 : 14,
+                            ),
+                          ),
+                          backgroundColor: theme.colorScheme.primaryContainer,
+                          labelStyle: TextStyle(
+                            color: theme.colorScheme.onPrimaryContainer,
+                          ),
+                        ))
+                    .toList(),
               ),
             ],
           ),
@@ -81,7 +86,9 @@ class CelebrationScreen extends StatelessWidget {
         ElevatedButton.icon(
           onPressed: onResetTimer,
           icon: const Icon(Icons.refresh),
-          label: const Text('Start New Session'),
+          label: Text(
+            'start_new_session_celebration_screen'.tr(),
+          ),
           style: ElevatedButton.styleFrom(
             backgroundColor: theme.colorScheme.primary,
             foregroundColor: theme.colorScheme.onPrimary,

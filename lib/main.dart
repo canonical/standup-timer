@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:yaru/yaru.dart';
@@ -13,11 +14,20 @@ import 'dart:developer' as developer;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   await YaruWindowTitleBar.ensureInitialized();
   setWindowTitle('Daily Standup Timer');
   await DesktopWindow.setWindowSize(const Size(1200, 800));
 
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(
+    EasyLocalization(
+      supportedLocales: [Locale('en', 'US'), Locale('pt', 'PT')],
+      path: 'assets/translations',
+      fallbackLocale: Locale('en', 'US'),
+      startLocale: Locale('pt', 'PT'),
+      child: ProviderScope(child: MyApp()),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -32,6 +42,9 @@ class MyApp extends StatelessWidget {
         darkTheme: yaruDark,
         themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         home: const TimerPage(),
       ),
     );
@@ -45,7 +58,8 @@ class TimerPage extends ConsumerStatefulWidget {
   ConsumerState<TimerPage> createState() => _TimerPageState();
 }
 
-class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserver {
+class _TimerPageState extends ConsumerState<TimerPage>
+    with WidgetsBindingObserver {
   final TextEditingController _nameController = TextEditingController();
   final GlobalKey _timerSectionKey = GlobalKey();
 
@@ -72,24 +86,32 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
 
   void _addPerson() {
     if (_nameController.text.trim().isNotEmpty) {
-      ref.read(participantsProvider.notifier).addPerson(_nameController.text.trim());
+      ref
+          .read(participantsProvider.notifier)
+          .addPerson(_nameController.text.trim());
       _nameController.clear();
     }
   }
 
   Future<void> _pasteParticipantList() async {
     try {
-      final addedCount = await ref.read(participantsProvider.notifier).pasteParticipantList();
+      final addedCount =
+          await ref.read(participantsProvider.notifier).pasteParticipantList();
       if (mounted) {
         String message;
         if (addedCount > 0) {
-          message = 'Added $addedCount new ${addedCount == 1 ? 'participant' : 'participants'}';
-          // Reset timer when new participants are added
+          message = 'added_participants_timer_page'.tr(namedArgs: {
+            'count': addedCount.toString(),
+            'entity': addedCount == 1
+                ? 'participant_timer_page'.tr()
+                : 'participants_timer_page'.tr()
+          });
+
           ref.read(timerProvider.notifier).resetTimer();
         } else {
-          message = 'No new participants added (duplicates were skipped)';
+          message = 'no_new_participants_timer_page'.tr();
         }
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
@@ -100,8 +122,8 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to paste from clipboard'),
+          SnackBar(
+            content: Text('failed_paste_timer_page'.tr()),
             duration: Duration(seconds: 2),
           ),
         );
@@ -136,7 +158,8 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
 
   void _nextPerson() {
     final participantsState = ref.read(participantsProvider);
-    if (participantsState.currentPersonIndex < participantsState.people.length - 1) {
+    if (participantsState.currentPersonIndex <
+        participantsState.people.length - 1) {
       ref.read(participantsProvider.notifier).nextPerson();
       ref.read(timerProvider.notifier).restartTimer();
     }
@@ -145,7 +168,7 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
   void _toggleTimer() {
     final participantsState = ref.read(participantsProvider);
     if (participantsState.people.isEmpty) return;
-    
+
     ref.read(timerProvider.notifier).toggleTimer();
   }
 
@@ -158,7 +181,7 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
   Widget build(BuildContext context) {
     final timerState = ref.watch(timerProvider);
     final participantsState = ref.watch(participantsProvider);
-    
+
     return Focus(
       autofocus: true,
       onKeyEvent: (node, event) {
@@ -182,7 +205,8 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
             final participantsState = ref.read(participantsProvider);
-            if (participantsState.currentPersonIndex < participantsState.people.length - 1) {
+            if (participantsState.currentPersonIndex <
+                participantsState.people.length - 1) {
               _nextPerson();
             }
             return KeyEventResult.handled;
@@ -215,33 +239,49 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                               controller: timerState.controller,
                               duration: timerState.duration,
                               isRunning: timerState.isRunning,
-                              currentPersonIndex: participantsState.currentPersonIndex,
+                              currentPersonIndex:
+                                  participantsState.currentPersonIndex,
                               people: participantsState.people,
                               currentTime: timerState.currentTime,
                               showTeamMembersHeader: isNarrow && !showPeople,
-                            onToggleTimer: _toggleTimer,
-                            onResetTimer: _resetTimer,
-                            onPreviousPerson: _previousPerson,
-                            onNextPerson: _nextPerson,
-                            onPersonSelected: (index) {
-                              ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
-                              ref.read(timerProvider.notifier).restartTimer();
-                            },
-                            onTimerComplete: () {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) {
-                                  final currentParticipants = ref.read(participantsProvider);
-                                  if (currentParticipants.currentPersonIndex < currentParticipants.people.length - 1) {
-                                    ref.read(participantsProvider.notifier).nextPerson();
-                                    ref.read(timerProvider.notifier).restartTimer();
-                                  } else {
-                                    // Last person finished - move to end state to show comic
-                                    ref.read(participantsProvider.notifier).setCurrentPersonIndex(currentParticipants.people.length);
-                                    ref.read(timerProvider.notifier).setRunning(false);
+                              onToggleTimer: _toggleTimer,
+                              onResetTimer: _resetTimer,
+                              onPreviousPerson: _previousPerson,
+                              onNextPerson: _nextPerson,
+                              onPersonSelected: (index) {
+                                ref
+                                    .read(participantsProvider.notifier)
+                                    .setCurrentPersonIndex(index);
+                                ref.read(timerProvider.notifier).restartTimer();
+                              },
+                              onTimerComplete: () {
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  if (mounted) {
+                                    final currentParticipants =
+                                        ref.read(participantsProvider);
+                                    if (currentParticipants.currentPersonIndex <
+                                        currentParticipants.people.length - 1) {
+                                      ref
+                                          .read(participantsProvider.notifier)
+                                          .nextPerson();
+                                      ref
+                                          .read(timerProvider.notifier)
+                                          .restartTimer();
+                                    } else {
+                                      // Last person finished - move to end state to show comic
+                                      ref
+                                          .read(participantsProvider.notifier)
+                                          .setCurrentPersonIndex(
+                                              currentParticipants
+                                                  .people.length);
+                                      ref
+                                          .read(timerProvider.notifier)
+                                          .setRunning(false);
+                                    }
                                   }
-                                }
-                              });
-                            },
+                                });
+                              },
                             ),
                           ),
                         ),
@@ -254,28 +294,42 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                 Expanded(
                                   child: PeopleSection(
                                     people: participantsState.people,
-                                    currentPersonIndex: participantsState.currentPersonIndex,
-                                    showAddPerson: participantsState.showAddPerson,
-                                    hasValidClipboardContent:
-                                        participantsState.hasValidClipboardContent,
+                                    currentPersonIndex:
+                                        participantsState.currentPersonIndex,
+                                    showAddPerson:
+                                        participantsState.showAddPerson,
+                                    hasValidClipboardContent: participantsState
+                                        .hasValidClipboardContent,
                                     nameController: _nameController,
                                     onAddPerson: _addPerson,
                                     onRemovePerson: _removePerson,
                                     onToggleAddPerson: () {
-                                      ref.read(participantsProvider.notifier).setShowAddPerson(true);
+                                      ref
+                                          .read(participantsProvider.notifier)
+                                          .setShowAddPerson(true);
                                     },
                                     onCancelAddPerson: () {
-                                      ref.read(participantsProvider.notifier).setShowAddPerson(false);
+                                      ref
+                                          .read(participantsProvider.notifier)
+                                          .setShowAddPerson(false);
                                       _nameController.clear();
                                     },
-                                    onPasteParticipantList: _pasteParticipantList,
-                                    onClearAllParticipants: _clearAllParticipants,
+                                    onPasteParticipantList:
+                                        _pasteParticipantList,
+                                    onClearAllParticipants:
+                                        _clearAllParticipants,
                                     onShuffleParticipants: _shuffleParticipants,
                                     onPersonSelected: (index) {
-                                      final currentIndex = ref.read(participantsProvider).currentPersonIndex;
+                                      final currentIndex = ref
+                                          .read(participantsProvider)
+                                          .currentPersonIndex;
                                       if (index != currentIndex) {
-                                        ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
-                                        ref.read(timerProvider.notifier).restartTimer();
+                                        ref
+                                            .read(participantsProvider.notifier)
+                                            .setCurrentPersonIndex(index);
+                                        ref
+                                            .read(timerProvider.notifier)
+                                            .restartTimer();
                                       }
                                     },
                                   ),
@@ -300,29 +354,41 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                 Expanded(
                                   child: PeopleSection(
                                     people: participantsState.people,
-                                    currentPersonIndex: participantsState.currentPersonIndex,
-                                    showAddPerson: participantsState.showAddPerson,
-                                    hasValidClipboardContent:
-                                        participantsState.hasValidClipboardContent,
+                                    currentPersonIndex:
+                                        participantsState.currentPersonIndex,
+                                    showAddPerson:
+                                        participantsState.showAddPerson,
+                                    hasValidClipboardContent: participantsState
+                                        .hasValidClipboardContent,
                                     nameController: _nameController,
                                     onAddPerson: _addPerson,
                                     onRemovePerson: _removePerson,
                                     onToggleAddPerson: () {
-                                      ref.read(participantsProvider.notifier).setShowAddPerson(true);
+                                      ref
+                                          .read(participantsProvider.notifier)
+                                          .setShowAddPerson(true);
                                     },
                                     onCancelAddPerson: () {
-                                      ref.read(participantsProvider.notifier).setShowAddPerson(false);
+                                      ref
+                                          .read(participantsProvider.notifier)
+                                          .setShowAddPerson(false);
                                       _nameController.clear();
                                     },
-                                    onPasteParticipantList: _pasteParticipantList,
-                                    onClearAllParticipants: _clearAllParticipants,
+                                    onPasteParticipantList:
+                                        _pasteParticipantList,
+                                    onClearAllParticipants:
+                                        _clearAllParticipants,
                                     onShuffleParticipants: _shuffleParticipants,
                                     onPersonSelected: (index) {
                                       developer.log(
                                           'onPersonSelected called with index $index',
                                           name: 'Main');
-                                      ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
-                                      ref.read(timerProvider.notifier).restartTimer();
+                                      ref
+                                          .read(participantsProvider.notifier)
+                                          .setCurrentPersonIndex(index);
+                                      ref
+                                          .read(timerProvider.notifier)
+                                          .restartTimer();
                                       developer.log(
                                           'Person selection completed',
                                           name: 'Main');
@@ -338,7 +404,8 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                         ] else ...[
                           SizedBox(
                             width: 320,
-                            child: SessionInfo(people: participantsState.people),
+                            child:
+                                SessionInfo(people: participantsState.people),
                           ),
                           const SizedBox(width: 24),
                         ],
@@ -349,7 +416,8 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                             controller: timerState.controller,
                             duration: timerState.duration,
                             isRunning: timerState.isRunning,
-                            currentPersonIndex: participantsState.currentPersonIndex,
+                            currentPersonIndex:
+                                participantsState.currentPersonIndex,
                             people: participantsState.people,
                             currentTime: timerState.currentTime,
                             showTeamMembersHeader: !showPeople,
@@ -358,18 +426,29 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                             onPreviousPerson: _previousPerson,
                             onNextPerson: _nextPerson,
                             onPersonSelected: (index) {
-                              ref.read(participantsProvider.notifier).setCurrentPersonIndex(index);
+                              ref
+                                  .read(participantsProvider.notifier)
+                                  .setCurrentPersonIndex(index);
                               ref.read(timerProvider.notifier).restartTimer();
                             },
                             onTimerComplete: () {
-                              final currentParticipants = ref.read(participantsProvider);
-                              if (currentParticipants.currentPersonIndex < currentParticipants.people.length - 1) {
-                                ref.read(participantsProvider.notifier).nextPerson();
+                              final currentParticipants =
+                                  ref.read(participantsProvider);
+                              if (currentParticipants.currentPersonIndex <
+                                  currentParticipants.people.length - 1) {
+                                ref
+                                    .read(participantsProvider.notifier)
+                                    .nextPerson();
                                 ref.read(timerProvider.notifier).restartTimer();
                               } else {
                                 // Last person finished - move to end state to show comic
-                                ref.read(participantsProvider.notifier).setCurrentPersonIndex(currentParticipants.people.length);
-                                ref.read(timerProvider.notifier).setRunning(false);
+                                ref
+                                    .read(participantsProvider.notifier)
+                                    .setCurrentPersonIndex(
+                                        currentParticipants.people.length);
+                                ref
+                                    .read(timerProvider.notifier)
+                                    .setRunning(false);
                               }
                             },
                           ),

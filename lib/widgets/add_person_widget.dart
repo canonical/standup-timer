@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class AddPersonWidget extends StatelessWidget {
@@ -37,7 +38,7 @@ class AddPersonWidget extends StatelessWidget {
             controller: nameController,
             style: TextStyle(color: inputText),
             decoration: InputDecoration(
-              hintText: 'Enter team member name',
+              hintText: 'enter_team_member_name_add_person_widget'.tr(),
               hintStyle: TextStyle(color: placeholderText),
               filled: true,
               fillColor: inputBg,
@@ -75,7 +76,7 @@ class AddPersonWidget extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Add Member',
+                  'add_member_add_person_widget'.tr(),
                   style: TextStyle(
                     color: theme.colorScheme.onPrimary,
                     fontSize: 14,
@@ -95,7 +96,7 @@ class AddPersonWidget extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Cancel',
+                  'cancel_add_member_add_person_widget'.tr(),
                   style: TextStyle(
                     color: buttonSecondaryText,
                     fontSize: 14,

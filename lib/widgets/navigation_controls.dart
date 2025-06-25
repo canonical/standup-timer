@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class NavigationControls extends StatelessWidget {
@@ -51,7 +52,7 @@ class NavigationControls extends StatelessWidget {
                   if (!isNarrow) ...[
                     const SizedBox(width: 4),
                     Text(
-                      'Previous',
+                      'previous_navigation_controls'.tr(),
                       style: TextStyle(
                         color: currentPersonIndex > 0
                             ? buttonGhostText
@@ -79,7 +80,8 @@ class NavigationControls extends StatelessWidget {
                       backgroundColor: theme.colorScheme.primary,
                       foregroundColor: theme.colorScheme.onPrimary,
                       padding: EdgeInsets.symmetric(
-                          horizontal: isNarrow ? 12 : 16, vertical: isNarrow ? 8 : 10),
+                          horizontal: isNarrow ? 12 : 16,
+                          vertical: isNarrow ? 8 : 10),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -91,20 +93,23 @@ class NavigationControls extends StatelessWidget {
                         ),
                         if (!isNarrow) ...[
                           const SizedBox(width: 6),
-                          const Text(
-                            'Finish',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          Text(
+                            'finish_navigation_controls'.tr(),
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ],
                     ),
                   )
                 : TextButton(
-                    onPressed:
-                        currentPersonIndex < peopleCount - 1 ? onNextPerson : null,
+                    onPressed: currentPersonIndex < peopleCount - 1
+                        ? onNextPerson
+                        : null,
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.symmetric(
-                          horizontal: isNarrow ? 4 : 8, vertical: isNarrow ? 6 : 8),
+                          horizontal: isNarrow ? 4 : 8,
+                          vertical: isNarrow ? 6 : 8),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -112,7 +117,7 @@ class NavigationControls extends StatelessWidget {
                       children: [
                         if (!isNarrow) ...[
                           Text(
-                            'Next',
+                            'next_navigation_controls'.tr(),
                             style: TextStyle(
                               color: currentPersonIndex < peopleCount - 1
                                   ? buttonGhostText
