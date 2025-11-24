@@ -19,6 +19,9 @@ on:
         options:
           - latest/candidate
           - latest/beta
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   snap:
