@@ -11,6 +11,23 @@ on:
     - cron: "0 0 * * 0"
 
 jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install flutter
+        run: sudo snap install --classic flutter
+      - name: Build
+        run: flutter build linux --release
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: standup-timer_linux-x64
+          path: build/linux/x64/release/bundle/*
   snap:
     name: Snap
     runs-on: ubuntu-latest
@@ -21,7 +38,7 @@ jobs:
           persist-credentials: false
       - name: Build
         id: snapcraft
-        uses: snapcore/action-build@v1
+        uses: snapcore/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79 # v1.3.0
       - name: Upload logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -33,11 +50,11 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: standup-timer_amd64.snap
+          name: standup-timer_snap-amd64
           path: ${{ steps.snapcraft.outputs.snap }}
       - name: Publish
         if: github.ref == 'refs/heads/main'
-        uses: snapcore/action-publish@v1
+        uses: snapcore/action-publish@214b86e5ca036ead1668c79afb81e550e6c54d40 # v1.2.0
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_LOGIN }}
         with:

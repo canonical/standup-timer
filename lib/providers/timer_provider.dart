@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
 class TimerState {
   final CountDownController controller;
@@ -70,24 +71,27 @@ class TimerNotifier extends StateNotifier<TimerState> {
   }
 
   void toggleTimer() {
-    print('TimerProvider: toggleTimer called, current isRunning: ${state.isRunning}');
+    developer.log('toggleTimer called, current isRunning: ${state.isRunning}',
+        name: 'TimerProvider');
     try {
       if (state.isRunning) {
-        print('TimerProvider: Pausing timer');
+        developer.log('Pausing timer', name: 'TimerProvider');
         state.controller.pause();
         state = state.copyWith(isRunning: false);
       } else {
-        print('TimerProvider: Starting timer');
+        developer.log('Starting timer', name: 'TimerProvider');
         state.controller.start();
         state = state.copyWith(isRunning: true);
       }
-      print('TimerProvider: New isRunning state: ${state.isRunning}');
+      developer.log('New isRunning state: ${state.isRunning}',
+          name: 'TimerProvider');
     } catch (e) {
-      print('TimerProvider: Controller error: $e');
+      developer.log('Controller error: $e', name: 'TimerProvider');
       // Controller was disposed, create a new one
       _recreateController();
       if (!state.isRunning) {
-        print('TimerProvider: Starting timer with new controller');
+        developer.log('Starting timer with new controller',
+            name: 'TimerProvider');
         state.controller.start();
         state = state.copyWith(isRunning: true);
       }

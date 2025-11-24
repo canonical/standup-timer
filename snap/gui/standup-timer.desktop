@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Stand-Up Timer
+GenericName=Timer
 Comment=A lightweight app to help run stand-up meetings
+Keywords=standup-timer;standup;stand-up;scrum;daily-scrum;
 Exec=standup-timer
 Type=Application
 Categories=Office;ProjectManagement;Clock;

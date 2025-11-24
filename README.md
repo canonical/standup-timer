@@ -1,6 +1,7 @@
 # Stand-Up Timer
 
 [![Snap][snap-badge]][snap-link]
+[![Codecov Status][codecov-badge]][codecov-link]
 
 **Stand-Up Timer** is a lightweight desktop application that helps run efficient
 stand-up or daily-scrum meetings.
@@ -46,4 +47,6 @@ Stand-Up Timer is released under the [GPL-3.0 license](./LICENSE).
 
 [snap-badge]: https://snapcraft.io/standup-timer/badge.svg
 [snap-link]: https://snapcraft.io/standup-timer
+[codecov-badge]: https://codecov.io/github/canonical/standup-timer/graph/badge.svg
+[codecov-link]: https://codecov.io/github/canonical/standup-timer
 [github-issues]: https://github.com/canonical/standup-timer/issues

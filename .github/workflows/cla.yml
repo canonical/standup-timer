@@ -1,0 +1,14 @@
+name: Check CLA
+permissions:
+  contents: read
+on: [pull_request]
+
+jobs:
+  cla-check:
+    name: Check CLA
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Check if CLA is signed
+        uses: canonical/has-signed-canonical-cla@1399a98cde76a66912c1a75b23f6f306ea814f1c # v2

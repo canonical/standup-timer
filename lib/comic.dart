@@ -62,13 +62,13 @@ class ComicScreen extends StatefulWidget {
   final VoidCallback? onResetTimer;
 
   const ComicScreen({
-    Key? key,
+    super.key,
     this.showTimerControls = false,
     this.isRunning = false,
     this.isDisabled = false,
     this.onToggleTimer,
     this.onResetTimer,
-  }) : super(key: key);
+  });
 
   @override
   State<ComicScreen> createState() => _ComicScreenState();
