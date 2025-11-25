@@ -36,7 +36,7 @@ dependencies:
   yaru: ^8.0.0
   yaru_window: ^0.2.1
   window_size: ^0.1.0
-  clipboard: ^0.1.3
+  clipboard: 2.0.2
   shared_preferences: ^2.2.2
   flutter_riverpod: ^2.5.1
   confetti: ^0.8.0
