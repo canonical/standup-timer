@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class CurrentSpeaker extends StatelessWidget {
@@ -17,7 +18,7 @@ class CurrentSpeaker extends StatelessWidget {
     final theme = Theme.of(context);
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = theme.colorScheme.onSurfaceVariant;
-    
+
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 800;
 
@@ -30,7 +31,7 @@ class CurrentSpeaker extends StatelessWidget {
             child: Text(
               people.isNotEmpty
                   ? people[currentPersonIndex]
-                  : 'Please add participants',
+                  : 'please_add_participants_current_speaker'.tr(),
               style: TextStyle(
                 fontSize: isNarrow ? 24 : 32,
                 fontWeight: FontWeight.w500,
@@ -44,9 +45,14 @@ class CurrentSpeaker extends StatelessWidget {
           SizedBox(height: isNarrow ? 6 : 8),
           Text(
             (isNarrow && showTeamMembersHeader)
-                ? 'Team Members'
+                ? 'team_members_current_speaker'.tr()
                 : (people.isNotEmpty
-                    ? 'Person ${currentPersonIndex + 1} of ${people.length}'
+                    ? 'person_position_current_speaker'.tr(
+                        namedArgs: {
+                          'current': '${currentPersonIndex + 1}',
+                          'total': '${people.length}'
+                        },
+                      )
                     : ''),
             style: TextStyle(
               color: textSecondary,

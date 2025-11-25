@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'add_person_widget.dart';
 
@@ -38,7 +39,6 @@ class PeopleSection extends StatefulWidget {
 }
 
 class _PeopleSectionState extends State<PeopleSection> {
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -82,9 +82,10 @@ class _PeopleSectionState extends State<PeopleSection> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, Color textPrimary, Color textSecondary, Color borderColor) {
+  Widget _buildHeader(BuildContext context, Color textPrimary,
+      Color textSecondary, Color borderColor) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -104,7 +105,7 @@ class _PeopleSectionState extends State<PeopleSection> {
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
-                    'Team Members',
+                    'team_members_people_section'.tr(),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -115,89 +116,91 @@ class _PeopleSectionState extends State<PeopleSection> {
                 ),
                 const SizedBox(width: 8),
                 PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'clear') {
-                    widget.onClearAllParticipants();
-                  } else if (value == 'shuffle') {
-                    widget.onShuffleParticipants();
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'clear',
-                    enabled: widget.people.isNotEmpty,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.clear_all,
-                          size: 16,
-                          color: widget.people.isNotEmpty 
-                              ? theme.colorScheme.onSurface
-                              : theme.colorScheme.outline,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Clear all',
-                          style: TextStyle(
-                            color: widget.people.isNotEmpty 
+                  onSelected: (value) {
+                    if (value == 'clear_all_people_section'.tr()) {
+                      widget.onClearAllParticipants();
+                    } else if (value == 'shuffle_order_people_section'.tr()) {
+                      widget.onShuffleParticipants();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'clear_all_people_section'.tr(),
+                      enabled: widget.people.isNotEmpty,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.clear_all,
+                            size: 16,
+                            color: widget.people.isNotEmpty
                                 ? theme.colorScheme.onSurface
                                 : theme.colorScheme.outline,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            'clear_all_people_section'.tr(),
+                            style: TextStyle(
+                              color: widget.people.isNotEmpty
+                                  ? theme.colorScheme.onSurface
+                                  : theme.colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  PopupMenuItem(
-                    value: 'shuffle',
-                    enabled: widget.people.length > 1,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.shuffle,
-                          size: 16,
-                          color: widget.people.length > 1 
-                              ? theme.colorScheme.onSurface
-                              : theme.colorScheme.outline,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Shuffle order',
-                          style: TextStyle(
-                            color: widget.people.length > 1 
+                    PopupMenuItem(
+                      value: 'shuffle_order_people_section'.tr(),
+                      enabled: widget.people.length > 1,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.shuffle,
+                            size: 16,
+                            color: widget.people.length > 1
                                 ? theme.colorScheme.onSurface
                                 : theme.colorScheme.outline,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            'shuffle_order_people_section'.tr(),
+                            style: TextStyle(
+                              color: widget.people.length > 1
+                                  ? theme.colorScheme.onSurface
+                                  : theme.colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ],
+                  icon: Icon(
+                    Icons.more_vert,
+                    size: 16,
+                    color: textSecondary,
                   ),
-                ],
-                icon: Icon(
-                  Icons.more_vert,
-                  size: 16,
-                  color: textSecondary,
+                  style: IconButton.styleFrom(
+                    padding: const EdgeInsets.all(6),
+                  ),
+                  tooltip: 'team_options_people_section'.tr(),
                 ),
-                style: IconButton.styleFrom(
-                  padding: const EdgeInsets.all(6),
-                ),
-                tooltip: 'Team options',
-              ),
               ],
             ),
           ),
           Row(
             children: [
               IconButton(
-                onPressed: widget.hasValidClipboardContent ? widget.onPasteParticipantList : null,
+                onPressed: widget.hasValidClipboardContent
+                    ? widget.onPasteParticipantList
+                    : null,
                 style: IconButton.styleFrom(
-                  backgroundColor: widget.hasValidClipboardContent 
+                  backgroundColor: widget.hasValidClipboardContent
                       ? theme.colorScheme.secondaryContainer
                       : theme.colorScheme.surfaceContainerHighest,
                   padding: const EdgeInsets.all(6),
                 ),
                 icon: Icon(
                   Icons.content_paste,
-                  color: widget.hasValidClipboardContent 
+                  color: widget.hasValidClipboardContent
                       ? theme.colorScheme.onSecondaryContainer
                       : theme.colorScheme.outline,
                   size: 16,
@@ -216,6 +219,41 @@ class _PeopleSectionState extends State<PeopleSection> {
                   size: 16,
                 ),
               ),
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'english_people_section'.tr()) {
+                    context.setLocale(Locale('en', 'US'));
+                  } else if (value == 'portuguese_people_section'.tr()) {
+                    context.setLocale(Locale('pt', 'PT'));
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'english_people_section'.tr(),
+                    enabled: true,
+                    child: Text(
+                      'english_people_section'.tr(),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'portuguese_people_section'.tr(),
+                    child: Text(
+                      'portuguese_people_section'.tr(),
+                      style: TextStyle(),
+                    ),
+                  ),
+                ],
+                icon: Icon(
+                  Icons.translate,
+                  color: theme.colorScheme.onPrimary,
+                  size: 16,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  padding: const EdgeInsets.all(6),
+                ),
+              ),
             ],
           ),
         ],
@@ -223,9 +261,10 @@ class _PeopleSectionState extends State<PeopleSection> {
     );
   }
 
-  Widget _buildPeopleList(BuildContext context, Color textPrimary, Color textSecondary) {
+  Widget _buildPeopleList(
+      BuildContext context, Color textPrimary, Color textSecondary) {
     final theme = Theme.of(context);
-    
+
     return ListView.builder(
       itemCount: widget.people.length,
       itemBuilder: (context, index) {
@@ -233,12 +272,10 @@ class _PeopleSectionState extends State<PeopleSection> {
         final itemBg = isSelected
             ? theme.colorScheme.surfaceContainerHighest
             : theme.colorScheme.primaryContainer;
-        final itemBorder = isSelected
-            ? theme.colorScheme.primary
-            : Colors.transparent;
-        final itemText = isSelected
-            ? textPrimary
-            : theme.colorScheme.onPrimaryContainer;
+        final itemBorder =
+            isSelected ? theme.colorScheme.primary : Colors.transparent;
+        final itemText =
+            isSelected ? textPrimary : theme.colorScheme.onPrimaryContainer;
         return Container(
           margin: const EdgeInsets.only(bottom: 4),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -251,7 +288,9 @@ class _PeopleSectionState extends State<PeopleSection> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: widget.onPersonSelected != null ? () => widget.onPersonSelected!(index) : null,
+                  onTap: widget.onPersonSelected != null
+                      ? () => widget.onPersonSelected!(index)
+                      : null,
                   behavior: HitTestBehavior.opaque,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -299,7 +338,7 @@ class _PeopleSectionState extends State<PeopleSection> {
           ),
           const SizedBox(height: 12),
           Text(
-            'No team members added',
+            'no_team_members_added_people_section'.tr(),
             style: TextStyle(
               color: textMuted,
               fontSize: 14,
@@ -307,7 +346,7 @@ class _PeopleSectionState extends State<PeopleSection> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Click + to add members or paste a participant list',
+            'click_to_add_or_paste_people_section'.tr(),
             style: TextStyle(
               color: textMuted,
               fontSize: 12,

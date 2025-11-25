@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/timer_provider.dart';
@@ -42,7 +43,7 @@ class _SessionInfoState extends ConsumerState<SessionInfo> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Session Info',
+                'session_info'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -62,17 +63,23 @@ class _SessionInfoState extends ConsumerState<SessionInfo> {
             ],
           ),
           const SizedBox(height: 12),
-          _buildInfoRow('Total members:', '${widget.people.length}', textSecondary, textPrimary),
+          _buildInfoRow('total_members_session_info'.tr(),
+              '${widget.people.length}', textSecondary, textPrimary),
           const SizedBox(height: 8),
-          _buildInfoRow('Expected duration:', '${widget.people.length * durationMinutes} min', textSecondary, textPrimary),
+          _buildInfoRow(
+              'expected_duration_session_info'.tr(),
+              '${widget.people.length * durationMinutes} min',
+              textSecondary,
+              textPrimary),
           const SizedBox(height: 8),
-          _buildInfoRow('Time per person:', '${timerState.duration}s', textSecondary, textPrimary),
+          _buildInfoRow('time_per_person_session_info'.tr(),
+              '${timerState.duration}s', textSecondary, textPrimary),
           if (_isExpanded) ...[
             const SizedBox(height: 16),
             Divider(color: borderColor),
             const SizedBox(height: 12),
             Text(
-              'Timer Configuration',
+              'timer_configuration_session_info'.tr(),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -86,16 +93,18 @@ class _SessionInfoState extends ConsumerState<SessionInfo> {
               children: _durationOptions.map((seconds) {
                 final isSelected = seconds == timerState.duration;
                 return GestureDetector(
-                  onTap: () => ref.read(timerProvider.notifier).setDuration(seconds),
+                  onTap: () =>
+                      ref.read(timerProvider.notifier).setDuration(seconds),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected 
+                      color: isSelected
                           ? theme.colorScheme.primaryContainer
                           : theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected 
+                        color: isSelected
                             ? theme.colorScheme.primary
                             : Colors.transparent,
                       ),
@@ -103,7 +112,7 @@ class _SessionInfoState extends ConsumerState<SessionInfo> {
                     child: Text(
                       '${seconds}s',
                       style: TextStyle(
-                        color: isSelected 
+                        color: isSelected
                             ? theme.colorScheme.onPrimaryContainer
                             : textPrimary,
                         fontSize: 12,
