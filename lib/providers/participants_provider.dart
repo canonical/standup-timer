@@ -145,6 +145,50 @@ class ParticipantsNotifier extends Notifier<ParticipantsState> {
     state = state.copyWith(showAddPerson: show);
   }
 
+  void movePersonUp(int index) {
+    if (index > 0 && index < state.people.length) {
+      final newPeople = [...state.people];
+      final person = newPeople.removeAt(index);
+      newPeople.insert(index - 1, person);
+      
+      // Adjust current person index if needed
+      int newCurrentIndex = state.currentPersonIndex;
+      if (state.currentPersonIndex == index) {
+        newCurrentIndex = index - 1;
+      } else if (state.currentPersonIndex == index - 1) {
+        newCurrentIndex = index;
+      }
+      
+      state = state.copyWith(
+        people: newPeople,
+        currentPersonIndex: newCurrentIndex,
+      );
+      _saveParticipantList();
+    }
+  }
+
+  void movePersonDown(int index) {
+    if (index >= 0 && index < state.people.length - 1) {
+      final newPeople = [...state.people];
+      final person = newPeople.removeAt(index);
+      newPeople.insert(index + 1, person);
+      
+      // Adjust current person index if needed
+      int newCurrentIndex = state.currentPersonIndex;
+      if (state.currentPersonIndex == index) {
+        newCurrentIndex = index + 1;
+      } else if (state.currentPersonIndex == index + 1) {
+        newCurrentIndex = index;
+      }
+      
+      state = state.copyWith(
+        people: newPeople,
+        currentPersonIndex: newCurrentIndex,
+      );
+      _saveParticipantList();
+    }
+  }
+
   Future<int> pasteParticipantList() async {
     try {
       final clipboardData = await ParticipantService.getClipboardContent();

@@ -16,6 +16,7 @@ Future<void> main() async {
   await YaruWindowTitleBar.ensureInitialized();
   setWindowTitle('Daily Standup Timer');
   await DesktopWindow.setWindowSize(const Size(1200, 800));
+  await DesktopWindow.setMinWindowSize(const Size(450, 650));
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -199,7 +200,8 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
           builder: (context, constraints) {
             final isNarrow = constraints.maxWidth < 800;
             final hasEnoughHeight = constraints.maxHeight > 550;
-            final showPeople = hasEnoughHeight;
+            // In narrow mode, only show people section if window is tall enough
+            final showPeople = isNarrow ? constraints.maxHeight > 930 : hasEnoughHeight;
 
             return Padding(
               padding: EdgeInsets.all(isNarrow ? 12.0 : 24.0),
@@ -278,6 +280,12 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                         ref.read(timerProvider.notifier).restartTimer();
                                       }
                                     },
+                                    onMovePersonUp: (index) {
+                                      ref.read(participantsProvider.notifier).movePersonUp(index);
+                                    },
+                                    onMovePersonDown: (index) {
+                                      ref.read(participantsProvider.notifier).movePersonDown(index);
+                                    },
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -326,6 +334,12 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                                       developer.log(
                                           'Person selection completed',
                                           name: 'Main');
+                                    },
+                                    onMovePersonUp: (index) {
+                                      ref.read(participantsProvider.notifier).movePersonUp(index);
+                                    },
+                                    onMovePersonDown: (index) {
+                                      ref.read(participantsProvider.notifier).movePersonDown(index);
                                     },
                                   ),
                                 ),
