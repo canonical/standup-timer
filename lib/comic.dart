@@ -285,7 +285,7 @@ class _ComicScreenState extends State<ComicScreen> {
                           ),
                           tooltip: 'Refresh comic',
                           style: IconButton.styleFrom(
-                            backgroundColor: theme.colorScheme.surface.withOpacity(0.8),
+                            backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.8),
                             padding: const EdgeInsets.all(8),
                           ),
                           onPressed: _refreshComic,
