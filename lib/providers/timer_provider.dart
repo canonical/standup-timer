@@ -31,16 +31,19 @@ class TimerState {
   }
 }
 
-class TimerNotifier extends StateNotifier<TimerState> {
+class TimerNotifier extends Notifier<TimerState> {
   static const String _durationKey = 'timer_duration';
 
-  TimerNotifier() : super(TimerState(
-    controller: CountDownController(),
-    duration: 120,
-    isRunning: false,
-    currentTime: 120,
-  )) {
+  @override
+  TimerState build() {
+    state = TimerState(
+      controller: CountDownController(),
+      duration: 120,
+      isRunning: false,
+      currentTime: 120,
+    );
     _loadDuration();
+    return state;
   }
 
   Future<void> _loadDuration() async {
@@ -152,6 +155,5 @@ class TimerNotifier extends StateNotifier<TimerState> {
   }
 }
 
-final timerProvider = StateNotifierProvider<TimerNotifier, TimerState>((ref) {
-  return TimerNotifier();
-});
+final timerProvider =
+    NotifierProvider<TimerNotifier, TimerState>(TimerNotifier.new);
