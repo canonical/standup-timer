@@ -30,15 +30,18 @@ class ParticipantsState {
   }
 }
 
-class ParticipantsNotifier extends StateNotifier<ParticipantsState> {
-  ParticipantsNotifier() : super(const ParticipantsState(
-    people: [],
-    currentPersonIndex: 0,
-    showAddPerson: false,
-    hasValidClipboardContent: false,
-  )) {
+class ParticipantsNotifier extends Notifier<ParticipantsState> {
+  @override
+  ParticipantsState build() {
+    state = const ParticipantsState(
+      people: [],
+      currentPersonIndex: 0,
+      showAddPerson: false,
+      hasValidClipboardContent: false,
+    );
     _loadSavedParticipants();
     _checkClipboardContent();
+    return state;
   }
 
   Future<void> _loadSavedParticipants() async {
@@ -229,6 +232,6 @@ class ParticipantsNotifier extends StateNotifier<ParticipantsState> {
   }
 }
 
-final participantsProvider = StateNotifierProvider<ParticipantsNotifier, ParticipantsState>((ref) {
-  return ParticipantsNotifier();
-});
+final participantsProvider =
+    NotifierProvider<ParticipantsNotifier, ParticipantsState>(
+        ParticipantsNotifier.new);

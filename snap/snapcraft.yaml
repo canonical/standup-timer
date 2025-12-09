@@ -36,7 +36,7 @@ parts:
   standup-timer:
     source: .
     plugin: flutter
-    build-snaps: [yq]
+    build-packages: [yq]
     override-pull: |
       craftctl default
       craftctl set version="$(yq -r .version pubspec.yaml)"
