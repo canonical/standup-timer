@@ -43,7 +43,7 @@ class GitHubProvider implements CiProvider {
     }
 
     dev.log('[github] GET $url', name: 'ci');
-    dev.log('[github] auth: ${token != null ? "Bearer ${token!.substring(0, token!.length.clamp(0, 8))}..." : "none"}', name: 'ci');
+    dev.log('[github] auth: ${token != null && token!.isNotEmpty ? "present" : "none"}', name: 'ci');
 
     try {
       final response = await http
