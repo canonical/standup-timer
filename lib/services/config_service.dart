@@ -30,7 +30,12 @@ import 'jenkins_provider.dart';
 /// ```
 class ConfigService {
   static String get configPath {
-    final home = Platform.environment['HOME'] ?? '';
+    // When running as a Snap, HOME points to the snap's private directory.
+    // SNAP_REAL_HOME contains the actual user home directory.
+    final home =
+        Platform.environment['SNAP_REAL_HOME'] ??
+        Platform.environment['HOME'] ??
+        '';
     return '$home/.config/standup-timer/workflows.yaml';
   }
 
