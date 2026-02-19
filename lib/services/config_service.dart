@@ -58,23 +58,57 @@ class ConfigService {
 
       return switch (provider) {
         'github' => () {
+            // Validate required GitHub fields.
+            final owner = entry['owner'];
+            if (owner is! String || owner.isEmpty) {
+              throw FormatException(
+                'GitHub workflow "${label ?? '<no label>'}" is missing required "owner" field in config.',
+              );
+            }
+            final repo = entry['repo'];
+            if (repo is! String || repo.isEmpty) {
+              throw FormatException(
+                'GitHub workflow "${label ?? '<no label>'}" is missing required "repo" field in config.',
+              );
+            }
+            final workflow = entry['workflow'];
+            if (workflow is! String || workflow.isEmpty) {
+              throw FormatException(
+                'GitHub workflow "${label ?? '$owner/$repo'}" is missing required "workflow" field in config.',
+              );
+            }
+
             final tok = (entry['token'] as String?) ?? defaultGitHubToken;
-            dev.log('[config] github entry "${label ?? entry['owner']}/${entry['repo']}" token: ${tok != null ? "set" : "NOT SET"}', name: 'ci');
+            final effectiveLabel = label ?? '$owner/$repo';
+            dev.log(
+              '[config] github entry "$effectiveLabel" token: ${tok != null ? "set" : "NOT SET"}',
+              name: 'ci',
+            );
             return GitHubProvider(
-              label: label ?? '${entry['owner']}/${entry['repo']}',
-              owner: entry['owner'] as String,
-              repo: entry['repo'] as String,
-              workflow: entry['workflow'] as String,
+              label: effectiveLabel,
+              owner: owner,
+              repo: repo,
+              workflow: workflow,
               // Per-entry token takes priority over the top-level default.
               token: tok,
             );
           }(),
-        'jenkins' => JenkinsProvider(
-            label: label ?? (entry['url'] as String),
-            jobUrl: entry['url'] as String,
-            username: entry['username'] as String?,
-            token: entry['token'] as String?,
-          ),
+        'jenkins' => () {
+            // Validate required Jenkins fields.
+            final url = entry['url'];
+            if (url is! String || url.isEmpty) {
+              throw FormatException(
+                'Jenkins workflow "${label ?? '<no label>'}" is missing required "url" field in config.',
+              );
+            }
+            final effectiveLabel = label ?? url;
+            return JenkinsProvider(
+              label: effectiveLabel,
+              jobUrl: url,
+              username: entry['username'] as String?,
+              token: entry['token'] as String?,
+            );
+          }(),
         _ => throw FormatException('Unknown provider "$provider"'),
       };
     }).toList();
