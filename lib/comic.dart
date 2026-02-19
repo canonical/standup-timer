@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'widgets/timer_controls.dart';
 
 class Comic {
   final String title;
@@ -55,19 +54,11 @@ Future<Comic> fetchComic() async {
 }
 
 class ComicScreen extends StatefulWidget {
-  final bool showTimerControls;
-  final bool isRunning;
-  final bool isDisabled;
-  final VoidCallback? onToggleTimer;
-  final VoidCallback? onResetTimer;
+  final VoidCallback? onNext;
 
   const ComicScreen({
     super.key,
-    this.showTimerControls = false,
-    this.isRunning = false,
-    this.isDisabled = false,
-    this.onToggleTimer,
-    this.onResetTimer,
+    this.onNext,
   });
 
   @override
@@ -200,7 +191,7 @@ class _ComicScreenState extends State<ComicScreen> {
                       Expanded(
                         child: Container(
                           width: constraints.maxWidth,
-                          height: constraints.maxHeight - (widget.showTimerControls ? 180 : 120), // Reserve space for controls if needed
+                          height: constraints.maxHeight - (widget.onNext != null ? 180 : 120),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: GestureDetector(
                             onTap: () => _showImageModal(context, comic),
@@ -210,7 +201,7 @@ class _ComicScreenState extends State<ComicScreen> {
                                 comic.img,
                                 fit: BoxFit.contain,
                                 width: constraints.maxWidth - 32,
-                                height: constraints.maxHeight - (widget.showTimerControls ? 180 : 120),
+                                height: constraints.maxHeight - (widget.onNext != null ? 180 : 120),
                                 loadingBuilder: (context, child, progress) {
                                   if (progress == null) return child;
                                   return const Center(child: CircularProgressIndicator());
@@ -232,14 +223,16 @@ class _ComicScreenState extends State<ComicScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      if (widget.showTimerControls) ...[
+                      if (widget.onNext != null) ...[
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          child: TimerControls(
-                            isRunning: widget.isRunning,
-                            isDisabled: widget.isDisabled,
-                            onToggleTimer: widget.onToggleTimer ?? () {},
-                            onResetTimer: widget.onResetTimer ?? () {},
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: OutlinedButton.icon(
+                              onPressed: widget.onNext,
+                              icon: const Icon(Icons.dashboard_outlined, size: 16),
+                              label: const Text('View CI Dashboard'),
+                            ),
                           ),
                         ),
                       ],
