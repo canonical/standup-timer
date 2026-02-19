@@ -4,12 +4,14 @@ class CurrentSpeaker extends StatelessWidget {
   final int currentPersonIndex;
   final List<String> people;
   final bool showTeamMembersHeader;
+  final bool isDashboardMode;
 
   const CurrentSpeaker({
     super.key,
     required this.currentPersonIndex,
     required this.people,
     this.showTeamMembersHeader = false,
+    this.isDashboardMode = false,
   });
 
   @override
@@ -28,9 +30,11 @@ class CurrentSpeaker extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: Text(
-              people.isNotEmpty
-                  ? people[currentPersonIndex]
-                  : 'Please add participants',
+              isDashboardMode && people.isNotEmpty
+                  ? 'Daily Standup'
+                  : (people.isNotEmpty
+                      ? people[currentPersonIndex]
+                      : 'Please add participants'),
               style: TextStyle(
                 fontSize: isNarrow ? 24 : 32,
                 fontWeight: FontWeight.w500,
@@ -43,11 +47,13 @@ class CurrentSpeaker extends StatelessWidget {
           ),
           SizedBox(height: isNarrow ? 6 : 8),
           Text(
-            (isNarrow && showTeamMembersHeader)
-                ? 'Team Members'
-                : (people.isNotEmpty
-                    ? 'Person ${currentPersonIndex + 1} of ${people.length}'
-                    : ''),
+            isDashboardMode && people.isNotEmpty
+                ? '${people.length} ${people.length == 1 ? 'participant' : 'participants'}'
+                : (isNarrow && showTeamMembersHeader)
+                    ? 'Team Members'
+                    : (people.isNotEmpty
+                        ? 'Person ${currentPersonIndex + 1} of ${people.length}'
+                        : ''),
             style: TextStyle(
               color: textSecondary,
               fontSize: isNarrow ? 14 : 16,

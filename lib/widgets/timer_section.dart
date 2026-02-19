@@ -6,7 +6,7 @@ import 'circular_timer.dart';
 import 'timer_controls.dart';
 import 'navigation_controls.dart';
 import 'celebration_screen.dart';
-import '../comic.dart';
+import '../screens/dashboard_screen.dart';
 
 class TimerSection extends StatefulWidget {
   final CountDownController controller;
@@ -105,6 +105,7 @@ class _TimerSectionState extends State<TimerSection> {
                 currentPersonIndex: widget.currentPersonIndex,
                 people: widget.people,
                 showTeamMembersHeader: widget.showTeamMembersHeader,
+                isDashboardMode: showComic,
               ),
               Container(
                 width: double.infinity,
@@ -119,7 +120,7 @@ class _TimerSectionState extends State<TimerSection> {
                           onResetTimer: _onResetFromCelebration,
                         )
                       : showComic
-                          ? ComicScreen(
+                          ? DashboardScreen(
                               showTimerControls: widget.people.isNotEmpty && timerInInitialState,
                               isRunning: widget.isRunning,
                               isDisabled: widget.people.isEmpty,

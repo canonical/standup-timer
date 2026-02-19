@@ -28,6 +28,59 @@ On snap-ready systems, you can install it on the command-line with:
 sudo snap install standup-timer
 ```
 
+## CI/CD Dashboard
+
+Stand-Up Timer can display the status of CI/CD workflows during the meeting.
+Configure it by creating `~/.config/standup-timer/workflows.yaml`.
+
+### GitHub Actions
+
+```yaml
+github_token: ghp_xxxx          # optional default token for all GitHub entries
+
+workflows:
+  - label: "My workflow"        # display name (optional)
+    provider: github
+    owner: canonical             # GitHub organisation or user
+    repo: my-repo
+    workflow: ci.yaml            # workflow filename
+    token: ghp_xxxx              # per-entry token (overrides github_token)
+```
+
+The `token` is only required for private repositories. It can be set once as
+`github_token` at the top level and will apply to all GitHub entries that do
+not specify their own `token`.
+
+### Jenkins
+
+```yaml
+workflows:
+  - label: "My Jenkins job"     # display name (optional)
+    provider: jenkins
+    url: https://jenkins.example.com/job/my-job
+    username: admin              # optional
+    token: abc123                # Jenkins API token (optional)
+```
+
+### Mixed example
+
+```yaml
+github_token: ghp_xxxx
+
+workflows:
+  - label: "Checkbox Daily Builds"
+    provider: github
+    owner: canonical
+    repo: checkbox
+    workflow: checkbox-daily-native-builds.yaml
+
+  - label: "Release pipeline"
+    provider: jenkins
+    url: https://jenkins.example.com/job/release
+    username: admin
+    token: abc123
+```
+
 ## Community and Support
 
 You can report any issues, bugs, or feature requests on the project's
