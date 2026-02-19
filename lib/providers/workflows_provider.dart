@@ -54,8 +54,7 @@ class WorkflowsNotifier extends Notifier<WorkflowsState> {
 
     if (_providers == null) {
       state = const WorkflowsState(
-        configError:
-            'Create ~/.config/standup-timer/workflows.yaml to monitor CI workflows.',
+        configError: 'Create workflows.yaml to monitor CI workflows.',
       );
       return;
     }
@@ -68,7 +67,8 @@ class WorkflowsNotifier extends Notifier<WorkflowsState> {
     }
 
     refresh();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) => refresh());
+    _refreshTimer =
+        Timer.periodic(const Duration(seconds: 60), (_) => refresh());
   }
 
   Future<void> refresh() async {

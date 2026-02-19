@@ -21,7 +21,7 @@ class _ErrorNotifier extends WorkflowsNotifier {
   @override
   WorkflowsState build() => const WorkflowsState(
         isLoading: false,
-        configError: 'Create ~/.config/standup-timer/workflows.yaml to monitor CI workflows.',
+        configError: 'Create workflows.yaml to monitor CI workflows.',
       );
 }
 
@@ -31,8 +31,14 @@ class _WithRunsNotifier extends WorkflowsNotifier {
         isLoading: false,
         lastFetched: DateTime.now(),
         runs: const [
-          CiRun(label: 'Checkbox Daily Builds', status: 'success', branch: 'main'),
-          CiRun(label: 'Release pipeline', status: 'failure', branch: 'release/1.0'),
+          CiRun(
+              label: 'Checkbox Daily Builds',
+              status: 'success',
+              branch: 'main'),
+          CiRun(
+              label: 'Release pipeline',
+              status: 'failure',
+              branch: 'release/1.0'),
           CiRun(label: 'Nightly job', status: 'in_progress'),
         ],
       );
@@ -60,7 +66,8 @@ void main() {
       });
 
       testWidgets('shown when onStartStandup is provided', (tester) async {
-        await tester.pumpWidget(_wrapEmpty(DashboardScreen(onStartStandup: () {})));
+        await tester
+            .pumpWidget(_wrapEmpty(DashboardScreen(onStartStandup: () {})));
         await tester.pumpAndSettle();
         expect(find.text('Start Standup'), findsOneWidget);
       });
@@ -74,7 +81,8 @@ void main() {
         expect(called, isTrue);
       });
 
-      testWidgets('tapping does not call the callback when isDisabled', (tester) async {
+      testWidgets('tapping does not call the callback when isDisabled',
+          (tester) async {
         var called = false;
         await tester.pumpWidget(_wrapEmpty(DashboardScreen(
           onStartStandup: () => called = true,
@@ -99,7 +107,8 @@ void main() {
         expect(find.byIcon(Icons.refresh), findsOneWidget);
       });
 
-      testWidgets('shows loading indicator instead of refresh button when loading',
+      testWidgets(
+          'shows loading indicator instead of refresh button when loading',
           (tester) async {
         await tester.pumpWidget(
             _wrap(const DashboardScreen(), notifier: _LoadingNotifier.new));
@@ -108,7 +117,8 @@ void main() {
         expect(find.byIcon(Icons.refresh), findsNothing);
       });
 
-      testWidgets('shows time-ago label when lastFetched is set', (tester) async {
+      testWidgets('shows time-ago label when lastFetched is set',
+          (tester) async {
         await tester.pumpWidget(
             _wrap(const DashboardScreen(), notifier: _WithRunsNotifier.new));
         await tester.pumpAndSettle();
@@ -123,8 +133,7 @@ void main() {
             _wrap(const DashboardScreen(), notifier: _ErrorNotifier.new));
         await tester.pumpAndSettle();
         expect(
-          find.textContaining(
-              'Create ~/.config/standup-timer/workflows.yaml'),
+          find.textContaining('Create ~/.config/standup-timer/workflows.yaml'),
           findsOneWidget,
         );
       });

@@ -31,7 +31,9 @@ sudo snap install standup-timer
 ## CI/CD Dashboard
 
 Stand-Up Timer can display the status of CI/CD workflows during the meeting.
-Configure it by creating `~/.config/standup-timer/workflows.yaml`.
+Configure it by creating `~/.config/standup-timer/workflows.yaml` or in 
+`~/snap/standup-timer/current/.config/standup-timer/workflows.yaml` if
+running from snap.
 
 ### GitHub Actions
 

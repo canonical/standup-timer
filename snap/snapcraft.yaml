@@ -31,7 +31,6 @@ apps:
     extensions: [gnome]
     plugs:
       - network
-      - home
 
 parts:
   standup-timer:
