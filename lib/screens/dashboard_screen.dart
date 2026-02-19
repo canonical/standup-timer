@@ -4,22 +4,15 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/workflows_provider.dart';
 import '../services/ci_provider.dart';
 import '../services/config_service.dart';
-import '../widgets/timer_controls.dart';
 
 class DashboardScreen extends ConsumerWidget {
-  final bool showTimerControls;
-  final bool isRunning;
+  final VoidCallback? onStartStandup;
   final bool isDisabled;
-  final VoidCallback? onToggleTimer;
-  final VoidCallback? onResetTimer;
 
   const DashboardScreen({
     super.key,
-    this.showTimerControls = false,
-    this.isRunning = false,
+    this.onStartStandup,
     this.isDisabled = false,
-    this.onToggleTimer,
-    this.onResetTimer,
   });
 
   @override
@@ -35,15 +28,17 @@ class DashboardScreen extends ConsumerWidget {
         ),
         Divider(height: 1, color: theme.colorScheme.outlineVariant),
         Expanded(child: _Body(state: state)),
-        if (showTimerControls) ...[
+        if (onStartStandup != null) ...[
           Divider(height: 1, color: theme.colorScheme.outlineVariant),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: TimerControls(
-              isRunning: isRunning,
-              isDisabled: isDisabled,
-              onToggleTimer: onToggleTimer ?? () {},
-              onResetTimer: onResetTimer ?? () {},
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: isDisabled ? null : onStartStandup,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Start Standup'),
+              ),
             ),
           ),
         ],

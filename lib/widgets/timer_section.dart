@@ -7,6 +7,9 @@ import 'timer_controls.dart';
 import 'navigation_controls.dart';
 import 'celebration_screen.dart';
 import '../screens/dashboard_screen.dart';
+import '../comic.dart';
+
+enum _PreStartView { comic, dashboard }
 
 class TimerSection extends StatefulWidget {
   final CountDownController controller;
@@ -47,11 +50,27 @@ class TimerSection extends StatefulWidget {
 class _TimerSectionState extends State<TimerSection> {
   late ConfettiController _confettiController;
   bool _showCelebration = false;
+  _PreStartView _preStartView = _PreStartView.comic;
 
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+  }
+
+  @override
+  void didUpdateWidget(TimerSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset to comic whenever the timer transitions back to initial state.
+    final isInitialNow = widget.currentTime == widget.duration &&
+        !widget.isRunning &&
+        widget.currentPersonIndex == 0;
+    final wasInitial = oldWidget.currentTime == oldWidget.duration &&
+        !oldWidget.isRunning &&
+        oldWidget.currentPersonIndex == 0;
+    if (isInitialNow && !wasInitial) {
+      setState(() => _preStartView = _PreStartView.comic);
+    }
   }
 
   @override
@@ -72,6 +91,7 @@ class _TimerSectionState extends State<TimerSection> {
   void _onResetFromCelebration() {
     setState(() {
       _showCelebration = false;
+      _preStartView = _PreStartView.comic;
     });
     widget.onResetTimer();
   }
@@ -120,13 +140,14 @@ class _TimerSectionState extends State<TimerSection> {
                           onResetTimer: _onResetFromCelebration,
                         )
                       : showComic
-                          ? DashboardScreen(
-                              showTimerControls: widget.people.isNotEmpty && timerInInitialState,
-                              isRunning: widget.isRunning,
-                              isDisabled: widget.people.isEmpty,
-                              onToggleTimer: widget.onToggleTimer,
-                              onResetTimer: widget.onResetTimer,
-                            )
+                          ? (_preStartView == _PreStartView.comic
+                              ? ComicScreen(
+                                  onNext: () => setState(() => _preStartView = _PreStartView.dashboard),
+                                )
+                              : DashboardScreen(
+                                  onStartStandup: widget.people.isNotEmpty ? widget.onToggleTimer : null,
+                                  isDisabled: widget.people.isEmpty,
+                                ))
                           : Column(
                               children: [
                                 Expanded(
