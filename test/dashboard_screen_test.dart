@@ -133,7 +133,7 @@ void main() {
             _wrap(const DashboardScreen(), notifier: _ErrorNotifier.new));
         await tester.pumpAndSettle();
         expect(
-          find.textContaining('Create ~/.config/standup-timer/workflows.yaml'),
+          find.textContaining('Create workflows.yaml to monitor CI workflows.'),
           findsOneWidget,
         );
       });
