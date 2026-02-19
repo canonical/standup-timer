@@ -16,13 +16,15 @@ class JenkinsProvider implements CiProvider {
   final String jobUrl;
   final String? username;
   final String? token;
+  final http.Client _client;
 
-  const JenkinsProvider({
+  JenkinsProvider({
     required this.label,
     required this.jobUrl,
     this.username,
     this.token,
-  });
+    http.Client? client,
+  }) : _client = client ?? http.Client();
 
   @override
   Future<CiRun> fetchLatestRun() async {
@@ -37,7 +39,7 @@ class JenkinsProvider implements CiProvider {
     }
 
     try {
-      final response = await http
+      final response = await _client
           .get(Uri.parse(url), headers: headers)
           .timeout(const Duration(seconds: 15));
 

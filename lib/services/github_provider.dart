@@ -19,14 +19,16 @@ class GitHubProvider implements CiProvider {
   final String repo;
   final String workflow;
   final String? token;
+  final http.Client _client;
 
-  const GitHubProvider({
+  GitHubProvider({
     required this.label,
     required this.owner,
     required this.repo,
     required this.workflow,
     this.token,
-  });
+    http.Client? client,
+  }) : _client = client ?? http.Client();
 
   @override
   Future<CiRun> fetchLatestRun() async {
@@ -46,7 +48,7 @@ class GitHubProvider implements CiProvider {
     dev.log('[github] auth: ${token != null && token!.isNotEmpty ? "present" : "none"}', name: 'ci');
 
     try {
-      final response = await http
+      final response = await _client
           .get(Uri.parse(url), headers: headers)
           .timeout(const Duration(seconds: 15));
 

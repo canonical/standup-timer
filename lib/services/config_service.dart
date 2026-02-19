@@ -37,8 +37,13 @@ class ConfigService {
   static List<CiProvider>? loadProviders() {
     final file = File(configPath);
     if (!file.existsSync()) return null;
+    return parseProviders(file.readAsStringSync());
+  }
 
-    final doc = loadYaml(file.readAsStringSync());
+  /// Parses [yamlContent] and returns one [CiProvider] per configured workflow
+  /// entry. Exposed for testing without touching the filesystem.
+  static List<CiProvider> parseProviders(String yamlContent) {
+    final doc = loadYaml(yamlContent);
     final rawList = doc['workflows'] as YamlList? ?? YamlList.wrap([]);
 
     // Top-level token acts as a default for all GitHub entries that don't
