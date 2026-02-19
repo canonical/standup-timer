@@ -211,10 +211,30 @@ class _RunRow extends StatelessWidget {
       message: run.fetchError ?? '',
       child: InkWell(
         onTap: canOpen
-            ? () => launchUrl(
-                  Uri.parse(run.runUrl!),
-                  mode: LaunchMode.externalApplication,
-                )
+            ? () async {
+                try {
+                  final uri = Uri.parse(run.runUrl!);
+                  final success = await launchUrl(
+                    uri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                  if (!success && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Could not open the run URL.'),
+                      ),
+                    );
+                  }
+                } catch (_) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('An error occurred while opening the run URL.'),
+                      ),
+                    );
+                  }
+                }
+              }
             : null,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
