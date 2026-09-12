@@ -157,6 +157,7 @@ class _TimerSectionState extends State<TimerSection> {
                                       key: ValueKey('circular_timer_${widget.currentPersonIndex}${widget.duration}'),
                                       controller: widget.controller,
                                       duration: widget.duration,
+                                      currentTime: widget.currentTime,
                                       isRunning: widget.isRunning,
                                       onComplete: widget.onTimerComplete,
                                     ),
