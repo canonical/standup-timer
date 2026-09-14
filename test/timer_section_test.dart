@@ -131,7 +131,8 @@ void main() {
   });
 
   group('Timer section', () {
-    testWidgets('shows Start Timer then Pause when widget rebuild with different timer state', (tester) async {
+    testWidgets('shows Start Timer then Pause when widget rebuild with different isRunning value', 
+      (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
@@ -149,8 +150,8 @@ void main() {
 
     testWidgets('''
       show Pause, Start Timer, then Pause again 
-      when widget rebuild with few different timer state
-      and different time
+      when widget rebuild with few different isRunning value
+      and different currentTime value
       ''', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
       await tester.pumpWidget(_wrap(_section(
@@ -176,7 +177,11 @@ void main() {
       expect(find.text('Pause'), findsOneWidget);
     });
 
-    testWidgets('shows Pause when timer is running and no change if widget rebuild with the same state', (tester) async {
+    testWidgets('''
+      shows Pause when timer is running and 
+      no change if widget rebuild with the same isRunning value
+      and different currentTime value
+      ''', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
