@@ -129,4 +129,67 @@ void main() {
       expect(find.text('Daily Standup'), findsNothing);
     });
   });
+
+  group('Timer section', () {
+    testWidgets('shows Start Timer then Pause when widget rebuild with different timer state', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      await tester.pumpWidget(_wrap(_section(
+        people: ['Alice', 'Bob'],
+        isRunning: false,
+        currentTime: 60,
+      )));
+      expect(find.text('Start Timer'), findsOneWidget);
+      await tester.pumpWidget(_wrap(_section(
+        people: ['Alice', 'Bob'],
+        isRunning: true,
+        currentTime: 60,
+      )));
+      expect(find.text('Pause'), findsOneWidget);
+    });
+
+    testWidgets('''
+      show Pause, Start Timer, then Pause again 
+      when widget rebuild with few different timer state
+      and different time
+      ''', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      await tester.pumpWidget(_wrap(_section(
+        people: ['Alice', 'Bob'],
+        isRunning: true,
+        duration: 120,
+        currentTime: 120,
+      )));
+      expect(find.text('Pause'), findsOneWidget);
+      await tester.pumpWidget(_wrap(_section(
+        people: ['Alice', 'Bob'],
+        isRunning: false,
+        duration: 120,
+        currentTime: 90,
+      )));
+      expect(find.text('Start Timer'), findsOneWidget);
+      await tester.pumpWidget(_wrap(_section(
+        people: ['Alice', 'Bob'],
+        isRunning: true,
+        duration: 120,
+        currentTime: 90,
+      )));
+      expect(find.text('Pause'), findsOneWidget);
+    });
+
+    testWidgets('shows Pause when timer is running and no change if widget rebuild with the same state', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      await tester.pumpWidget(_wrap(_section(
+        people: ['Alice', 'Bob'],
+        isRunning: true,
+        currentTime: 120,
+      )));
+      expect(find.text('Pause'), findsOneWidget);
+      await tester.pumpWidget(_wrap(_section(
+        people: ['Alice', 'Bob'],
+        isRunning: true,
+        currentTime: 90,
+      )));
+      expect(find.text('Pause'), findsOneWidget);
+    });
+  });
 }
