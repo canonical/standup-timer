@@ -83,7 +83,7 @@ class TimerNotifier extends Notifier<TimerState> {
         state = state.copyWith(isRunning: false);
       } else {
         developer.log('Starting timer', name: 'TimerProvider');
-        state.controller.start();
+        state.controller.resume();
         state = state.copyWith(isRunning: true);
       }
       developer.log('New isRunning state: ${state.isRunning}',

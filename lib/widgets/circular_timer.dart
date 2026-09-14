@@ -6,6 +6,7 @@ import '../providers/timer_provider.dart';
 class CircularTimer extends ConsumerStatefulWidget {
   final CountDownController controller;
   final int duration;
+  final int currentTime;
   final VoidCallback onComplete;
   final bool isRunning;
 
@@ -13,6 +14,7 @@ class CircularTimer extends ConsumerStatefulWidget {
     super.key,
     required this.controller,
     required this.duration,
+    required this.currentTime,
     required this.onComplete,
     required this.isRunning,
   });
@@ -39,7 +41,11 @@ class _CircularTimerState extends ConsumerState<CircularTimer> {
     // Respond to isRunning state changes
     if (widget.isRunning != oldWidget.isRunning) {
       if (widget.isRunning) {
-        widget.controller.start();
+        if (widget.duration != widget.currentTime) {
+          widget.controller.resume();
+        } else {
+          widget.controller.start();
+        }
       } else {
         widget.controller.pause();
       }
