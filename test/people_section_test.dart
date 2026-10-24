@@ -547,8 +547,7 @@ void main() {
         final visibleRows =
             tester.widgetList(find.textContaining('Person ')).length;
 
-        // Change selection to an item just below the viewport (still built
-        // thanks to cacheExtent, but off-screen) — remounts nothing because
+        // Change selection to an item just below the viewport — remounts nothing because
         // the elements update in place, so didUpdateWidget triggers _scrollTo
         await tester.pumpWidget(MaterialApp(home: Scaffold(
           body: _buildSection(

@@ -389,7 +389,6 @@ class _PeopleSectionState extends State<PeopleSection> {
     return ListView.builder(
       controller: _controller,
       itemCount: widget.people.length,
-      cacheExtent: 2,
       itemBuilder: (context, index) {
         final isSelected = index == widget.currentPersonIndex;
         final isFocused = index == _focusedIndex;
