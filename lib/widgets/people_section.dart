@@ -43,12 +43,15 @@ class PeopleSection extends StatefulWidget {
 }
 
 class _PeopleSectionState extends State<PeopleSection> {
+  final ScrollController _controller = ScrollController();
+  final Map<int, GlobalKey> _keys = {};
   int? _focusedIndex;
   final FocusNode _listFocusNode = FocusNode();
 
   @override
   void dispose() {
     _listFocusNode.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -59,6 +62,16 @@ class _PeopleSectionState extends State<PeopleSection> {
     if (_focusedIndex != null && _focusedIndex! >= widget.people.length) {
       setState(() {
         _focusedIndex = widget.people.isEmpty ? null : widget.people.length - 1;
+      });
+    }
+
+    if (oldWidget.people.length != widget.people.length) {
+      _keys.clear();
+    }
+
+    if (oldWidget.currentPersonIndex != widget.currentPersonIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollTo(widget.currentPersonIndex, oldWidget.currentPersonIndex);
       });
     }
   }
@@ -107,7 +120,9 @@ class _PeopleSectionState extends State<PeopleSection> {
             if (_focusedIndex == null) {
               _focusedIndex = widget.people.length - 1;
             } else if (_focusedIndex! > 0) {
-              _focusedIndex = _focusedIndex! - 1;
+              final currentFocusedIndex = _focusedIndex! - 1;
+              _scrollTo(currentFocusedIndex, _focusedIndex!);
+              _focusedIndex = currentFocusedIndex;
             }
           });
           return true;
@@ -116,7 +131,9 @@ class _PeopleSectionState extends State<PeopleSection> {
             if (_focusedIndex == null) {
               _focusedIndex = 0;
             } else if (_focusedIndex! < widget.people.length - 1) {
-              _focusedIndex = _focusedIndex! + 1;
+              final currentFocusedIndex = _focusedIndex! + 1;
+              _scrollTo(currentFocusedIndex, _focusedIndex!);
+              _focusedIndex =currentFocusedIndex;
             }
           });
           return true;
@@ -127,6 +144,49 @@ class _PeopleSectionState extends State<PeopleSection> {
       }
     }
     return false;
+  }
+
+  GlobalKey _keyFor(int index) => _keys.putIfAbsent(index, () => GlobalKey());
+
+  void _scrollTo(int index, int previous) async {
+    if (!mounted) return;
+    final ctx = _keyFor(index).currentContext;
+
+    if (ctx != null) {
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        alignmentPolicy: index >= previous
+            ? ScrollPositionAlignmentPolicy.keepVisibleAtEnd
+            : ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      );
+      return;
+    }
+
+    // For item that is far away from viewport
+    if (!_controller.hasClients) return;
+    final position = _controller.position;
+    final estimate =
+        (index / widget.people.length) * position.maxScrollExtent;
+    await _controller.animateTo(
+      estimate.clamp(0.0, position.maxScrollExtent),
+      duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _keyFor(index).currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          alignment: 0.3,
+        );
+      }
+    });
   }
 
   @override
@@ -327,6 +387,7 @@ class _PeopleSectionState extends State<PeopleSection> {
     final theme = Theme.of(context);
     
     return ListView.builder(
+      controller: _controller,
       itemCount: widget.people.length,
       itemBuilder: (context, index) {
         final isSelected = index == widget.currentPersonIndex;
@@ -353,6 +414,7 @@ class _PeopleSectionState extends State<PeopleSection> {
           itemText = theme.colorScheme.onPrimaryContainer;
         }
         return Container(
+          key: _keyFor(index),
           margin: const EdgeInsets.only(bottom: 4),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
