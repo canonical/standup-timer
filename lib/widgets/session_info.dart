@@ -25,8 +25,8 @@ class _SessionInfoState extends ConsumerState<SessionInfo> {
     final borderColor = theme.colorScheme.outline;
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = theme.colorScheme.onSurfaceVariant;
-    final timerState = ref.watch(timerProvider);
-    final durationMinutes = (timerState.duration / 60).round();
+    final duration = ref.watch(timerProvider.select((s) => s.duration));
+    final durationMinutes = (duration / 60).round();
 
     return Container(
       decoration: BoxDecoration(
@@ -66,7 +66,7 @@ class _SessionInfoState extends ConsumerState<SessionInfo> {
           const SizedBox(height: 8),
           _buildInfoRow('Expected duration:', '${widget.people.length * durationMinutes} min', textSecondary, textPrimary),
           const SizedBox(height: 8),
-          _buildInfoRow('Time per person:', '${timerState.duration}s', textSecondary, textPrimary),
+          _buildInfoRow('Time per person:', '${duration}s', textSecondary, textPrimary),
           if (_isExpanded) ...[
             const SizedBox(height: 16),
             Divider(color: borderColor),
@@ -84,7 +84,7 @@ class _SessionInfoState extends ConsumerState<SessionInfo> {
               spacing: 8,
               runSpacing: 8,
               children: _durationOptions.map((seconds) {
-                final isSelected = seconds == timerState.duration;
+                final isSelected = seconds == duration;
                 return GestureDetector(
                   onTap: () => ref.read(timerProvider.notifier).setDuration(seconds),
                   child: Container(

@@ -25,7 +25,7 @@ TimerSection _section({
   int currentPersonIndex = 0,
   bool isRunning = false,
   int duration = 120,
-  int? currentTime,
+  bool hasElapsedTime = false,
 }) =>
     TimerSection(
       controller: CountDownController(),
@@ -33,7 +33,7 @@ TimerSection _section({
       isRunning: isRunning,
       currentPersonIndex: currentPersonIndex,
       people: people,
-      currentTime: currentTime ?? duration,
+      hasElapsedTime: hasElapsedTime,
       onToggleTimer: () {},
       onResetTimer: () {},
       onPreviousPerson: () {},
@@ -68,7 +68,7 @@ void main() {
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: true,
-        currentTime: 60, // mid-run
+        hasElapsedTime: true, // mid-run
       )));
       await tester.pump();
       expect(find.byType(ComicScreen), findsNothing);
@@ -83,7 +83,7 @@ void main() {
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: true,
-        currentTime: 60,
+        hasElapsedTime: true,
       )));
       await tester.pump();
       expect(find.byType(ComicScreen), findsNothing);
@@ -92,7 +92,7 @@ void main() {
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: false,
-        currentTime: 120, // back to full duration
+        hasElapsedTime: false, // back to full duration
       )));
       await tester.pump();
       expect(find.byType(ComicScreen), findsOneWidget);
@@ -122,7 +122,7 @@ void main() {
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: true,
-        currentTime: 60,
+        hasElapsedTime: true,
       )));
       await tester.pump();
       expect(find.text('Alice'), findsOneWidget);
@@ -137,13 +137,13 @@ void main() {
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: false,
-        currentTime: 60,
+        hasElapsedTime: true,
       )));
       expect(find.text('Start Timer'), findsOneWidget);
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: true,
-        currentTime: 60,
+        hasElapsedTime: true,
       )));
       expect(find.text('Pause'), findsOneWidget);
     });
@@ -151,28 +151,28 @@ void main() {
     testWidgets('''
       show Pause, Start Timer, then Pause again 
       when widget rebuild with few different isRunning value
-      and different currentTime value
+      and different hasElapsedTime value
       ''', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: true,
         duration: 120,
-        currentTime: 120,
+        hasElapsedTime: false,
       )));
       expect(find.text('Pause'), findsOneWidget);
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: false,
         duration: 120,
-        currentTime: 90,
+        hasElapsedTime: true,
       )));
       expect(find.text('Start Timer'), findsOneWidget);
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: true,
         duration: 120,
-        currentTime: 90,
+        hasElapsedTime: true,
       )));
       expect(find.text('Pause'), findsOneWidget);
     });
@@ -180,19 +180,19 @@ void main() {
     testWidgets('''
       shows Pause when timer is running and 
       no change if widget rebuild with the same isRunning value
-      and different currentTime value
+      and different hasElapsedTime value
       ''', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: true,
-        currentTime: 120,
+        hasElapsedTime: false,
       )));
       expect(find.text('Pause'), findsOneWidget);
       await tester.pumpWidget(_wrap(_section(
         people: ['Alice', 'Bob'],
         isRunning: true,
-        currentTime: 90,
+        hasElapsedTime: true,
       )));
       expect(find.text('Pause'), findsOneWidget);
     });
