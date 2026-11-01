@@ -99,8 +99,8 @@ class _ComicScreenState extends State<ComicScreen> {
               // Image and caption container
               Container(
                 constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.95,
-                  maxHeight: MediaQuery.of(context).size.height * 0.95,
+                  maxWidth: MediaQuery.sizeOf(context).width * 0.95,
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.95,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

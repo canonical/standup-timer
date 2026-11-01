@@ -24,7 +24,7 @@ class NavigationControls extends StatelessWidget {
     final buttonGhostText = theme.colorScheme.onSurfaceVariant;
     final disabledColor = theme.colorScheme.outline;
 
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isNarrow = screenWidth < 800;
 
     return ConstrainedBox(
@@ -41,7 +41,8 @@ class NavigationControls extends StatelessWidget {
                   onPressed: currentPersonIndex > 0 ? onPreviousPerson : null,
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(
-                        horizontal: isNarrow ? 6 : 8, vertical: isNarrow ? 4 : 6),
+                        horizontal: isNarrow ? 6 : 8,
+                        vertical: isNarrow ? 4 : 6),
                     minimumSize: Size(isNarrow ? 80 : 100, isNarrow ? 32 : 36),
                   ),
                   child: Row(
@@ -86,8 +87,10 @@ class NavigationControls extends StatelessWidget {
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: theme.colorScheme.onPrimary,
                           padding: EdgeInsets.symmetric(
-                              horizontal: isNarrow ? 12 : 16, vertical: isNarrow ? 6 : 8),
-                          minimumSize: Size(isNarrow ? 80 : 100, isNarrow ? 32 : 36),
+                              horizontal: isNarrow ? 12 : 16,
+                              vertical: isNarrow ? 6 : 8),
+                          minimumSize:
+                              Size(isNarrow ? 80 : 100, isNarrow ? 32 : 36),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -101,19 +104,23 @@ class NavigationControls extends StatelessWidget {
                               const SizedBox(width: 6),
                               const Text(
                                 'Finish',
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                style: TextStyle(
+                                    fontSize: 13, fontWeight: FontWeight.w500),
                               ),
                             ],
                           ],
                         ),
                       )
                     : TextButton(
-                        onPressed:
-                            currentPersonIndex < peopleCount - 1 ? onNextPerson : null,
+                        onPressed: currentPersonIndex < peopleCount - 1
+                            ? onNextPerson
+                            : null,
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.symmetric(
-                              horizontal: isNarrow ? 6 : 8, vertical: isNarrow ? 4 : 6),
-                          minimumSize: Size(isNarrow ? 80 : 100, isNarrow ? 32 : 36),
+                              horizontal: isNarrow ? 6 : 8,
+                              vertical: isNarrow ? 4 : 6),
+                          minimumSize:
+                              Size(isNarrow ? 80 : 100, isNarrow ? 32 : 36),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -150,7 +157,7 @@ class NavigationControls extends StatelessWidget {
   }
 
   Widget _buildDotNavigation(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isNarrow = screenWidth < 800;
     final isVeryNarrow = screenWidth < 500;
 
@@ -180,8 +187,9 @@ class NavigationControls extends StatelessWidget {
 
     // Calculate available width and make scrollable if dots won't fit
     final totalDotsWidth = (dotSize + dotMargin * 2) * peopleCount;
-    final availableWidth = MediaQuery.of(context).size.width / 3; // roughly 1/3 for center section
-    
+    final availableWidth =
+        MediaQuery.sizeOf(context).width / 3; // roughly 1/3 for center section
+
     if (totalDotsWidth > availableWidth || peopleCount > 6) {
       return SizedBox(
         height: dotSize,
