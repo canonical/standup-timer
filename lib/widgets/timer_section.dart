@@ -17,7 +17,7 @@ class TimerSection extends StatefulWidget {
   final bool isRunning;
   final int currentPersonIndex;
   final List<String> people;
-  final int currentTime;
+  final bool hasElapsedTime;
   final VoidCallback onToggleTimer;
   final VoidCallback onResetTimer;
   final VoidCallback onPreviousPerson;
@@ -33,7 +33,7 @@ class TimerSection extends StatefulWidget {
     required this.isRunning,
     required this.currentPersonIndex,
     required this.people,
-    required this.currentTime,
+    required this.hasElapsedTime,
     required this.onToggleTimer,
     required this.onResetTimer,
     required this.onPreviousPerson,
@@ -62,10 +62,10 @@ class _TimerSectionState extends State<TimerSection> {
   void didUpdateWidget(TimerSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Reset to comic whenever the timer transitions back to initial state.
-    final isInitialNow = widget.currentTime == widget.duration &&
+    final isInitialNow = !widget.hasElapsedTime &&
         !widget.isRunning &&
         widget.currentPersonIndex == 0;
-    final wasInitial = oldWidget.currentTime == oldWidget.duration &&
+    final wasInitial = !oldWidget.hasElapsedTime &&
         !oldWidget.isRunning &&
         oldWidget.currentPersonIndex == 0;
     if (isInitialNow && !wasInitial) {
@@ -106,7 +106,7 @@ class _TimerSectionState extends State<TimerSection> {
     final isNarrow = screenWidth < 800;
     
     // Show XKCD comic when no participants, timer hasn't started, or all speakers are done
-    final timerInInitialState = widget.currentTime == widget.duration && !widget.isRunning && widget.currentPersonIndex == 0;
+    final timerInInitialState = !widget.hasElapsedTime && !widget.isRunning && widget.currentPersonIndex == 0;
     final showComic = widget.people.isEmpty || 
         timerInInitialState ||
         (widget.people.isNotEmpty && widget.currentPersonIndex >= widget.people.length && !widget.isRunning && !_showCelebration);
@@ -157,7 +157,7 @@ class _TimerSectionState extends State<TimerSection> {
                                       key: ValueKey('circular_timer_${widget.currentPersonIndex}${widget.duration}'),
                                       controller: widget.controller,
                                       duration: widget.duration,
-                                      currentTime: widget.currentTime,
+                                      hasElapsedTime: widget.hasElapsedTime,
                                       isRunning: widget.isRunning,
                                       onComplete: widget.onTimerComplete,
                                     ),

@@ -157,7 +157,12 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
-    final timerState = ref.watch(timerProvider);
+    final timerState = ref.watch(timerProvider.select((s) => (
+          controller: s.controller,
+          duration: s.duration,
+          isRunning: s.isRunning,
+          hasElapsedTime: s.currentTime != s.duration,
+        )));
     final participantsState = ref.watch(participantsProvider);
     
     return Focus(
@@ -219,7 +224,7 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                               isRunning: timerState.isRunning,
                               currentPersonIndex: participantsState.currentPersonIndex,
                               people: participantsState.people,
-                              currentTime: timerState.currentTime,
+                              hasElapsedTime: timerState.hasElapsedTime,
                               showTeamMembersHeader: isNarrow && !showPeople,
                             onToggleTimer: _toggleTimer,
                             onResetTimer: _resetTimer,
@@ -365,7 +370,7 @@ class _TimerPageState extends ConsumerState<TimerPage> with WidgetsBindingObserv
                             isRunning: timerState.isRunning,
                             currentPersonIndex: participantsState.currentPersonIndex,
                             people: participantsState.people,
-                            currentTime: timerState.currentTime,
+                            hasElapsedTime: timerState.hasElapsedTime,
                             showTeamMembersHeader: !showPeople,
                             onToggleTimer: _toggleTimer,
                             onResetTimer: _resetTimer,
