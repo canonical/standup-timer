@@ -102,7 +102,7 @@ class _TimerSectionState extends State<TimerSection> {
     final cardBg = theme.colorScheme.surface;
     final borderColor = theme.colorScheme.outline;
     
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isNarrow = screenWidth < 800;
     
     // Show XKCD comic when no participants, timer hasn't started, or all speakers are done

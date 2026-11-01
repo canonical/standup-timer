@@ -20,7 +20,7 @@ class CurrentSpeaker extends StatelessWidget {
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = theme.colorScheme.onSurfaceVariant;
     
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isNarrow = screenWidth < 800;
 
     return Padding(
